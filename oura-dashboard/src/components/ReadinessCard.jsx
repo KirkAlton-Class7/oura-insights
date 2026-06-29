@@ -1,0 +1,46 @@
+import Card from './Card';
+import SubScoreBar from './SubScoreBar';
+
+export default function ReadinessCard({ data, onCopyFailure, onCopySuccess }) {
+  if (!data) return null;
+  const { score, contributors, temperature_deviation } = data;
+  const keys = ['hrv_balance', 'resting_heart_rate', 'recovery_index', 'body_temperature', 'previous_night', 'previous_day_activity', 'sleep_balance', 'activity_balance', 'sleep_regularity'];
+
+  return (
+    <Card
+      title="Readiness"
+      subtitle="Daily readiness and contributors"
+      snapshotText={`Readiness: ${score || '--'}`}
+      snapshotLabel="Readiness snapshot"
+      onCopyFailure={onCopyFailure}
+      onCopySuccess={onCopySuccess}
+    >
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-slate-400">Score</span>
+          <span className="text-2xl font-outfit font-bold text-cyan-400">{score || '--'}</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {keys.map((key) => (
+            <SubScoreBar
+              key={key}
+              label={key.replace(/_/g, ' ')}
+              value={contributors?.[key]}
+              color="#06b6d4"
+            />
+          ))}
+        </div>
+        {temperature_deviation !== undefined && (
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-400">Temperature Deviation</span>
+              <span className={`font-mono ${Number(temperature_deviation) > 0.5 ? 'text-red-400' : Number(temperature_deviation) < -0.5 ? 'text-green-400' : 'text-cyan-400'}`}>
+                {Number(temperature_deviation).toFixed(2)}°C
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
