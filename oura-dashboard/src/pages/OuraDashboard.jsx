@@ -11,7 +11,7 @@ import ActivityCard from '../components/ActivityCard';
 import StressResilienceCard from '../components/StressResilienceCard';
 import CardioCard from '../components/CardioCard';
 import BiometricsCard from '../components/BiometricsCard';
-import BackgroundManager from '../components/BackgroundManager'; // new
+import BackgroundManager from '../components/BackgroundManager';
 import { buildDashboardSnapshot } from '../utils/snapshot';
 import { writeClipboardText } from '../utils/clipboard';
 import { useToast } from '../context/ToastContext';
@@ -28,7 +28,7 @@ export default function OuraDashboard() {
   });
 
   // Background state
-  const [backgroundMode, setBackgroundMode] = useState('particles'); // 'particles' or 'image'
+  const [backgroundMode, setBackgroundMode] = useState('particles');
   const [imageList, setImageList] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -155,13 +155,13 @@ export default function OuraDashboard() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Background Manager – replaces direct ParticlesBackground */}
       <BackgroundManager
         mode={backgroundMode}
         imageList={imageList}
         currentIndex={currentImageIndex}
         onPrev={prevImage}
         onNext={nextImage}
+        isSidebarCollapsed={isSidebarCollapsed}
       />
 
       <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapsed={toggleSidebar} />
@@ -175,15 +175,12 @@ export default function OuraDashboard() {
         />
 
         <main className="relative z-10 max-w-6xl mx-auto px-4 py-6 space-y-8">
-          {/* Date Navigation */}
           <section id="scores" className="scroll-mt-20">
             <DateNav dates={dateWindow} selectedDate={selectedDate} onSelect={setSelectedDate} />
           </section>
 
-          {/* Quote Card */}
           <QuoteCard />
 
-          {/* Score Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ScoreCard
               label="Readiness"
@@ -205,7 +202,6 @@ export default function OuraDashboard() {
             />
           </div>
 
-          {/* Detail Cards */}
           <div className="space-y-6">
             <section id="readiness" className="scroll-mt-20">
               <ReadinessCard data={readinessData} />
