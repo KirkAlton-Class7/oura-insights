@@ -1,8 +1,7 @@
 // Oura Insights — Service Worker
 // Caches the app shell for full offline support.
-// Version bumped to v2 to refresh caches after style update.
 
-const CACHE_NAME = 'oura-insights-v2';
+const CACHE_NAME = 'oura-insights-v1';
 
 const SHELL_ASSETS = [
   './index.html',
@@ -10,8 +9,8 @@ const SHELL_ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png',
-  // Google Fonts (Inter + Outfit)
-  'https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap'
+  // Google Fonts
+  'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap'
 ];
 
 // ── INSTALL: cache all shell assets ──
