@@ -15,9 +15,9 @@ export default function DateNav({ dates, selectedDate, onSelect }) {
             onClick={() => onSelect(d)}
             className={`flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2 rounded-xl border transition-all ${
               isActive
-                ? 'border-cyan-400 bg-cyan-400/10 text-cyan-300'
-                : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/30 hover:text-slate-200'
-            }`}
+                ? 'border-cyan-400 bg-cyan-400/20 text-cyan-300 shadow-lg shadow-cyan-400/20'
+                : 'border-white/10 bg-slate-800/80 text-slate-400 hover:border-white/30 hover:text-slate-200'
+            } backdrop-blur-sm`}
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.96 }}
           >

@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from 'react';
-import ParticlesBackground from '../components/ParticlesBackground';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import UploadScreen from '../components/UploadScreen';
@@ -12,6 +11,7 @@ import ActivityCard from '../components/ActivityCard';
 import StressResilienceCard from '../components/StressResilienceCard';
 import CardioCard from '../components/CardioCard';
 import BiometricsCard from '../components/BiometricsCard';
+import BackgroundManager from '../components/BackgroundManager';
 import { buildDashboardSnapshot } from '../utils/snapshot';
 import { writeClipboardText } from '../utils/clipboard';
 import { useToast } from '../context/ToastContext';
@@ -27,6 +27,11 @@ export default function OuraDashboard() {
     return saved === 'true';
   });
 
+  // Background state
+  const [backgroundMode, setBackgroundMode] = useState('particles');
+  const [imageList, setImageList] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   useEffect(() => {
     localStorage.setItem('oura_sidebar_collapsed', String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
@@ -34,6 +39,37 @@ export default function OuraDashboard() {
   const toggleSidebar = useCallback(() => {
     setIsSidebarCollapsed((prev) => !prev);
   }, []);
+
+  // Load gallery manifest
+  useEffect(() => {
+    const loadManifest = async () => {
+      try {
+        const base = import.meta.env.BASE_URL || '/';
+        const res = await fetch(`${base}data/images/image_gallery/gallery-manifest.json`);
+        if (!res.ok) throw new Error('Manifest not found');
+        const data = await res.json();
+        setImageList(data);
+      } catch (error) {
+        console.warn('Failed to load gallery manifest:', error);
+        setImageList([]);
+      }
+    };
+    loadManifest();
+  }, []);
+
+  const toggleBackground = useCallback(() => {
+    setBackgroundMode(prev => (prev === 'particles' ? 'image' : 'particles'));
+  }, []);
+
+  const nextImage = useCallback(() => {
+    if (imageList.length === 0) return;
+    setCurrentImageIndex(prev => (prev + 1) % imageList.length);
+  }, [imageList.length]);
+
+  const prevImage = useCallback(() => {
+    if (imageList.length === 0) return;
+    setCurrentImageIndex(prev => (prev - 1 + imageList.length) % imageList.length);
+  }, [imageList.length]);
 
   const handleDataLoaded = useCallback((data) => {
     setAppData(data);
@@ -119,22 +155,32 @@ export default function OuraDashboard() {
 
   return (
     <div className="relative min-h-screen">
-      <ParticlesBackground />
+      <BackgroundManager
+        mode={backgroundMode}
+        imageList={imageList}
+        currentIndex={currentImageIndex}
+        onPrev={prevImage}
+        onNext={nextImage}
+        isSidebarCollapsed={isSidebarCollapsed}
+      />
+
       <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapsed={toggleSidebar} />
-      
+
       <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'xl:ml-20' : 'xl:ml-72'}`}>
-        <Header dateString={selectedDate} onCopySnapshot={handleCopySnapshot} />
+        <Header
+          dateString={selectedDate}
+          onCopySnapshot={handleCopySnapshot}
+          backgroundMode={backgroundMode}
+          onToggleBackground={toggleBackground}
+        />
 
         <main className="relative z-10 max-w-6xl mx-auto px-4 py-6 space-y-8">
-          {/* Date Navigation */}
           <section id="scores" className="scroll-mt-20">
             <DateNav dates={dateWindow} selectedDate={selectedDate} onSelect={setSelectedDate} />
           </section>
 
-          {/* Quote Card */}
           <QuoteCard />
 
-          {/* Score Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <ScoreCard
               label="Readiness"
@@ -156,7 +202,6 @@ export default function OuraDashboard() {
             />
           </div>
 
-          {/* Detail Cards */}
           <div className="space-y-6">
             <section id="readiness" className="scroll-mt-20">
               <ReadinessCard data={readinessData} />

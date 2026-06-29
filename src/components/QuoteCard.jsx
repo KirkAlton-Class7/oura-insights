@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Quote, RefreshCw, Bookmark, Copy, BookmarkCheck, Star, X } from 'lucide-react';
 import Card from './Card';
 import { writeClipboardText } from '../utils/clipboard';
-import { QUOTES } from '../data/quotes';
 
 export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
   const [currentQuote, setCurrentQuote] = useState(null);
@@ -11,28 +10,53 @@ export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
   const [favorites, setFavorites] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [quotesList, setQuotesList] = useState([]);
 
+  // Load quotes from the public JSON file
   useEffect(() => {
-    loadFavorites();
-    const random = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-    setCurrentQuote(random);
+    const loadQuotes = async () => {
+      try {
+        const base = import.meta.env.BASE_URL || '/';
+        const response = await fetch(`${base}data/quotes/quotes.json`);
+        if (!response.ok) throw new Error('Failed to fetch quotes');
+        const data = await response.json();
+        setQuotesList(data);
+        if (data.length > 0) {
+          const random = data[Math.floor(Math.random() * data.length)];
+          setCurrentQuote(random);
+        }
+      } catch (error) {
+        console.error('Failed to load quotes:', error);
+        // Fallback to a single default quote so the card still renders
+        setQuotesList([]);
+        setCurrentQuote({
+          text: 'Could not load quotes. Please check the file.',
+          speaker: 'System',
+        });
+      }
+    };
+    loadQuotes();
   }, []);
 
-  const loadFavorites = () => {
-    const stored = localStorage.getItem('oura_quotes_favorites');
-    const favs = stored ? JSON.parse(stored) : [];
-    setFavorites(favs);
+  // Load favorites from localStorage when currentQuote changes
+  useEffect(() => {
     if (currentQuote) {
+      const stored = localStorage.getItem('oura_quotes_favorites');
+      const favs = stored ? JSON.parse(stored) : [];
+      setFavorites(favs);
       setSaved(favs.some(q => q.text === currentQuote.text && q.speaker === currentQuote.speaker));
     }
-  };
+  }, [currentQuote]);
 
   const refreshQuote = () => {
+    if (quotesList.length === 0) return;
     setIsRefreshing(true);
     let newQuote;
+    let attempts = 0;
     do {
-      newQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-    } while (QUOTES.length > 1 && newQuote.text === currentQuote?.text);
+      newQuote = quotesList[Math.floor(Math.random() * quotesList.length)];
+      attempts++;
+    } while (quotesList.length > 1 && newQuote.text === currentQuote?.text && attempts < 20);
     setCurrentQuote(newQuote);
     setTimeout(() => setIsRefreshing(false), 400);
   };

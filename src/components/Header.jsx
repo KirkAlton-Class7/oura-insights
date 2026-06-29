@@ -1,8 +1,13 @@
 import { motion } from 'framer-motion';
-import { Clock, Camera } from 'lucide-react';
+import { Clock, Camera, Image, ImageOff } from 'lucide-react'; // added Image and ImageOff
 import { useState, useEffect } from 'react';
 
-export default function Header({ dateString, onCopySnapshot }) {
+export default function Header({ 
+  dateString, 
+  onCopySnapshot, 
+  backgroundMode, 
+  onToggleBackground 
+}) {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -32,7 +37,7 @@ export default function Header({ dateString, onCopySnapshot }) {
 
         <div className="flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4">
           <div className="flex items-center gap-3">
-            <div className="dash-logo flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <svg width="22" height="22" viewBox="0 0 80 80" fill="none">
                 <circle cx="40" cy="40" r="36" stroke="rgba(6,182,212,0.25)" stroke-width="9"/>
                 <circle cx="40" cy="40" r="36" stroke="#06b6d4" stroke-width="9"
@@ -56,6 +61,23 @@ export default function Header({ dateString, onCopySnapshot }) {
               <span className="text-sm font-mono text-slate-300">{formattedTime}</span>
             </div>
 
+            {/* Toggle Background Button */}
+            <button
+              onClick={onToggleBackground}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-slate-300 hover:border-white/40 hover:text-cyan-300 transition-all text-xs font-mono"
+              title={backgroundMode === 'particles' ? 'Show background image' : 'Show particles'}
+            >
+              {backgroundMode === 'particles' ? (
+                <Image className="w-4 h-4" />
+              ) : (
+                <ImageOff className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {backgroundMode === 'particles' ? 'Image' : 'Particles'}
+              </span>
+            </button>
+
+            {/* Copy Snapshot Button */}
             <button
               onClick={onCopySnapshot}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-slate-300 hover:border-white/40 hover:text-cyan-300 transition-all text-xs font-mono"
