@@ -114,75 +114,11 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
   }
   .glass:hover {
     border-color: var(--border-hover);
     transform: translateY(-2px);
     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1);
-  }
-
-  /* Shimmer border glow on hover (simulates gradient border) */
-  .glass::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius);
-    padding: 1px;
-    background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(6,182,212,0.2) 60deg, transparent 120deg, rgba(139,92,246,0.2) 180deg, transparent 240deg, rgba(6,182,212,0.2) 300deg, transparent 360deg);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-  }
-  .glass:hover::before {
-    opacity: 1;
-  }
-
-  /* Bottom accent line */
-  .glass::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--gradient-main);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s ease;
-    border-radius: 0 0 var(--radius) var(--radius);
-  }
-  .glass:hover::after {
-    transform: scaleX(1);
-  }
-
-  /* Decorative corner */
-  .glass .corner {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 48px;
-    height: 48px;
-    pointer-events: none;
-    opacity: 0.3;
-    transition: opacity 0.3s;
-  }
-  .glass:hover .corner {
-    opacity: 0.6;
-  }
-  .glass .corner::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top left, rgba(255,255,255,0.05), transparent);
-    border-radius: 0 0 var(--radius) 0;
   }
 
   /* ── TOAST ── */
@@ -351,22 +287,9 @@
     padding: 0 16px 32px;
     max-width: 1200px;
     margin: 0 auto;
-    position: relative;
-    z-index: 1;
     background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(6,182,212,0.05) 0%, transparent 60%),
                 radial-gradient(ellipse 50% 40% at 80% 100%, rgba(139,92,246,0.04) 0%, transparent 60%),
                 linear-gradient(135deg, var(--bg-start) 0%, var(--bg-start) 50%, var(--bg-end) 100%);
-  }
-
-  /* Particle background canvas */
-  #particles-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
   }
 
   .dash-header {
@@ -378,8 +301,6 @@
     border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
     gap: 12px;
-    position: relative;
-    z-index: 2;
   }
   .dash-logo {
     display: flex;
@@ -397,7 +318,6 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    flex-wrap: wrap;
   }
   .dash-date-full {
     font-size: 0.85rem;
@@ -436,8 +356,6 @@
   .date-nav-wrap {
     margin: 16px 0 24px;
     padding: 0;
-    position: relative;
-    z-index: 2;
   }
   .date-nav {
     display: flex;
@@ -498,8 +416,6 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     margin-bottom: 24px;
-    position: relative;
-    z-index: 2;
   }
   .score-card {
     background: var(--surface);
@@ -579,6 +495,7 @@
   .trend-bar-wrap.active .trend-bar { opacity: 1; }
   .trend-bar-wrap:not(.active) .trend-bar { opacity: 0.35; }
 
+  /* Tooltip for trend bars */
   .trend-tooltip {
     position: absolute;
     bottom: calc(100% + 6px);
@@ -607,8 +524,6 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    position: relative;
-    z-index: 2;
   }
   .detail-card {
     background: var(--surface);
@@ -618,71 +533,12 @@
     padding: 24px;
     transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
     position: relative;
-    overflow: hidden;
   }
   .detail-card:hover {
     border-color: var(--border-hover);
     transform: translateY(-2px);
     box-shadow: var(--shadow);
   }
-  /* Add glass::before/after effects to detail-card as well */
-  .detail-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius);
-    padding: 1px;
-    background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(6,182,212,0.2) 60deg, transparent 120deg, rgba(139,92,246,0.2) 180deg, transparent 240deg, rgba(6,182,212,0.2) 300deg, transparent 360deg);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-  }
-  .detail-card:hover::before {
-    opacity: 1;
-  }
-  .detail-card::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--gradient-main);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s ease;
-    border-radius: 0 0 var(--radius) var(--radius);
-  }
-  .detail-card:hover::after {
-    transform: scaleX(1);
-  }
-  .detail-card .corner {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 48px;
-    height: 48px;
-    pointer-events: none;
-    opacity: 0.3;
-    transition: opacity 0.3s;
-  }
-  .detail-card:hover .corner {
-    opacity: 0.6;
-  }
-  .detail-card .corner::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top left, rgba(255,255,255,0.05), transparent);
-    border-radius: 0 0 var(--radius) 0;
-  }
-
   .detail-card-header {
     display: flex;
     align-items: center;
@@ -714,6 +570,7 @@
     color: var(--text2);
   }
 
+  /* Copy button on cards */
   .copy-card-btn {
     position: absolute;
     top: 16px;
@@ -727,7 +584,6 @@
     transition: all 0.2s;
     opacity: 0;
     backdrop-filter: blur(4px);
-    z-index: 5;
   }
   .detail-card:hover .copy-card-btn {
     opacity: 1;
@@ -902,117 +758,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── QUOTE CARD ── */
-  .quote-card {
-    margin-top: 24px;
-    position: relative;
-    z-index: 2;
-  }
-  .quote-card blockquote {
-    position: relative;
-    padding-left: 20px;
-    border-left: 3px solid var(--accent-cyan);
-  }
-  .quote-card .quote-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    justify-content: flex-end;
-  }
-  .quote-card .quote-actions button {
-    background: none;
-    border: none;
-    color: var(--text3);
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.2s;
-    font-size: 0.8rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .quote-card .quote-actions button:hover {
-    color: var(--accent-cyan);
-    background: rgba(6,182,212,0.1);
-  }
-  .quote-card .quote-actions button.saved {
-    color: var(--optimal);
-  }
-
-  /* Favorites Modal */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-    padding: 20px;
-  }
-  .modal-overlay.open {
-    display: flex;
-  }
-  .modal-content {
-    background: var(--surface);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    max-width: 500px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    padding: 24px;
-    position: relative;
-  }
-  .modal-content .close-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: none;
-    border: none;
-    color: var(--text3);
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-  .modal-content .close-btn:hover {
-    color: var(--text);
-  }
-  .modal-content .favorite-item {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .modal-content .favorite-item:hover {
-    background: rgba(255,255,255,0.03);
-  }
-  .modal-content .favorite-item .quote-text {
-    font-size: 0.95rem;
-    color: var(--text);
-  }
-  .modal-content .favorite-item .quote-attribution {
-    font-size: 0.8rem;
-    color: var(--text2);
-    margin-top: 4px;
-  }
-  .modal-content .favorite-item .remove-fav {
-    float: right;
-    background: none;
-    border: none;
-    color: var(--text3);
-    cursor: pointer;
-    font-size: 0.8rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-  .modal-content .favorite-item .remove-fav:hover {
-    background: rgba(244,63,94,0.2);
-    color: var(--attention);
-  }
-
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     .score-section { grid-template-columns: 1fr; }
@@ -1033,9 +778,6 @@
 </style>
 </head>
 <body>
-
-<!-- PARTICLE BACKGROUND -->
-<canvas id="particles-canvas"></canvas>
 
 <!-- UPLOAD SCREEN -->
 <div id="upload-screen">
@@ -1118,141 +860,12 @@
   <div class="score-section fade-up stagger-3" id="score-section"></div>
 
   <div class="details-wrap fade-up stagger-4" id="details-wrap"></div>
-
-  <!-- Quote Card -->
-  <div class="quote-card glass fade-up stagger-5" id="quote-card">
-    <div class="corner"></div>
-    <div style="padding: 20px;">
-      <blockquote id="quote-text" style="font-size:1.05rem; line-height:1.6; color:var(--text);">
-        "Loading quote..."
-      </blockquote>
-      <div style="margin-top: 8px; font-size:0.9rem; color:var(--text2);" id="quote-attribution"></div>
-      <div class="quote-actions">
-        <button onclick="refreshQuote()" title="Refresh quote">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M1 4v6h6M23 20v-6h-6"/>
-            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-          </svg>
-          Refresh
-        </button>
-        <button onclick="copyQuote()" title="Copy quote">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 4v16h16V4H4zm2 2h12v12H6V6z"/>
-            <path d="M10 10h4v4h-4v-4z"/>
-          </svg>
-          Copy
-        </button>
-        <button id="save-quote-btn" onclick="toggleSaveQuote()" title="Save to favorites">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-          </svg>
-          <span id="save-label">Save</span>
-        </button>
-        <button onclick="showFavorites()" title="View favorites">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-          Favorites
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- FAVORITES MODAL -->
-<div class="modal-overlay" id="favorites-modal">
-  <div class="modal-content">
-    <button class="close-btn" onclick="closeFavorites()">&times;</button>
-    <h2 style="margin-bottom: 16px; color: var(--text);">⭐ Favorite Quotes</h2>
-    <div id="favorites-list">
-      <p style="color: var(--text3); text-align: center;">No favorites yet.</p>
-    </div>
-  </div>
 </div>
 
 <!-- TOAST -->
 <div id="toast"><span class="check">✓</span><span id="toast-message">Copied!</span></div>
 
 <script>
-// ── PARTICLES ──
-(function() {
-  const canvas = document.getElementById('particles-canvas');
-  const ctx = canvas.getContext('2d');
-  let particles = [];
-  const COUNT = 80;
-  const CONNECTION_DIST = 100;
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  class Particle {
-    constructor() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height;
-      this.vx = (Math.random() - 0.5) * 0.3;
-      this.vy = (Math.random() - 0.5) * 0.3;
-      this.radius = Math.random() * 2 + 1;
-    }
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-      if (this.x < 0) this.x = canvas.width;
-      if (this.x > canvas.width) this.x = 0;
-      if (this.y < 0) this.y = canvas.height;
-      if (this.y > canvas.height) this.y = 0;
-    }
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(6, 182, 212, 0.6)';
-      ctx.fill();
-    }
-  }
-
-  function init() {
-    particles = [];
-    for (let i = 0; i < COUNT; i++) {
-      particles.push(new Particle());
-    }
-  }
-
-  function drawConnections() {
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < CONNECTION_DIST) {
-          const opacity = (1 - dist / CONNECTION_DIST) * 0.2;
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(6, 182, 212, ${opacity})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
-      }
-    }
-  }
-
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (const p of particles) {
-      p.update();
-      p.draw();
-    }
-    drawConnections();
-    requestAnimationFrame(animate);
-  }
-
-  init();
-  animate();
-})();
-
 // ── TOAST ──
 let toastTimeout = null;
 function showToast(message) {
@@ -1273,6 +886,7 @@ function copyText(text, label = 'Data') {
     navigator.clipboard.writeText(text).then(() => {
       showToast(`${label} copied to clipboard.`);
     }).catch(() => {
+      // fallback
       fallbackCopy(text, label);
     });
   } else {
@@ -1304,6 +918,7 @@ function getDashboardSnapshot() {
   lines.push('==================================');
   lines.push(`Date: ${document.getElementById('dash-date-full').textContent}`);
   lines.push('');
+  // Add score cards
   const scoreCards = document.querySelectorAll('.score-card');
   scoreCards.forEach(card => {
     const label = card.querySelector('.score-card-label')?.textContent || '';
@@ -1312,14 +927,17 @@ function getDashboardSnapshot() {
     lines.push(`${label}: ${score} (${status})`);
   });
   lines.push('');
+  // Add detail cards
   document.querySelectorAll('.detail-card').forEach(card => {
     const title = card.querySelector('.detail-card-title')?.textContent?.trim() || 'Details';
     lines.push(`--- ${title} ---`);
+    // Get all sub-score values
     card.querySelectorAll('.sub-score-item').forEach(item => {
       const label = item.querySelector('.sub-score-label')?.textContent || '';
       const val = item.querySelector('.sub-score-val')?.textContent || '';
       if (label && val) lines.push(`${label}: ${val}`);
     });
+    // Get stats
     card.querySelectorAll('.stat-box').forEach(stat => {
       const label = stat.querySelector('.stat-box-label')?.textContent || '';
       const val = stat.querySelector('.stat-box-value')?.textContent || '';
@@ -1341,21 +959,25 @@ function copyDashboardSnapshot() {
 
 // ── COPY CARD CONTENT ──
 function copyCardContent(cardElement, cardName) {
+  // Build a text representation of the card
   let lines = [];
   const title = cardElement.querySelector('.detail-card-title')?.textContent?.trim() || cardName;
   lines.push(`${title} — ${document.getElementById('dash-date-full').textContent}`);
   lines.push('----------------------------------------');
+  // Sub-scores
   cardElement.querySelectorAll('.sub-score-item').forEach(item => {
     const label = item.querySelector('.sub-score-label')?.textContent || '';
     const val = item.querySelector('.sub-score-val')?.textContent || '';
     if (label && val) lines.push(`${label}: ${val}`);
   });
+  // Stats
   cardElement.querySelectorAll('.stat-box').forEach(stat => {
     const label = stat.querySelector('.stat-box-label')?.textContent || '';
     const val = stat.querySelector('.stat-box-value')?.textContent || '';
     const unit = stat.querySelector('.stat-box-unit')?.textContent || '';
     if (label && val) lines.push(`${label}: ${val} ${unit}`.trim());
   });
+  // Extra bio items
   cardElement.querySelectorAll('.bio-item').forEach(item => {
     const label = item.querySelector('.bio-item-label')?.textContent || '';
     const val = item.querySelector('.bio-item-value')?.textContent || '';
@@ -1363,147 +985,12 @@ function copyCardContent(cardElement, cardName) {
     if (label && val) lines.push(`${label}: ${val} ${unit}`.trim());
   });
   if (lines.length <= 1) {
+    // fallback: grab all text
     const text = cardElement.textContent.replace(/\s+/g, ' ').trim();
     lines = [text];
   }
   copyText(lines.join('\n'), `${cardName} data`);
 }
-
-// ── QUOTE CARD ──
-const QUOTES = [
-  { text: "The only way to do great work is to love what you do.", speaker: "Steve Jobs" },
-  { text: "Innovation distinguishes between a leader and a follower.", speaker: "Steve Jobs" },
-  { text: "Your time is limited, so don't waste it living someone else's life.", speaker: "Steve Jobs" },
-  { text: "The best time to plant a tree was 20 years ago. The second best time is now.", speaker: "Chinese Proverb" },
-  { text: "In the middle of difficulty lies opportunity.", speaker: "Albert Einstein" },
-  { text: "Life is what happens when you're busy making other plans.", speaker: "John Lennon" },
-  { text: "Get busy living or get busy dying.", speaker: "Stephen King" },
-  { text: "The only thing we have to fear is fear itself.", speaker: "Franklin D. Roosevelt" },
-  { text: "To be or not to be, that is the question.", speaker: "William Shakespeare" },
-  { text: "I think, therefore I am.", speaker: "René Descartes" }
-];
-
-let currentQuote = null;
-let savedQuotes = [];
-
-function loadSavedQuotes() {
-  try {
-    const data = localStorage.getItem('oura_quotes_favorites');
-    savedQuotes = data ? JSON.parse(data) : [];
-  } catch {
-    savedQuotes = [];
-  }
-}
-
-function saveFavorites() {
-  localStorage.setItem('oura_quotes_favorites', JSON.stringify(savedQuotes));
-}
-
-function getRandomQuote() {
-  return QUOTES[Math.floor(Math.random() * QUOTES.length)];
-}
-
-function displayQuote(quote) {
-  currentQuote = quote;
-  document.getElementById('quote-text').textContent = `“${quote.text}”`;
-  const attribution = quote.speaker || quote.author || 'Unknown';
-  document.getElementById('quote-attribution').textContent = `— ${attribution}`;
-  // Update save button state
-  const isSaved = savedQuotes.some(q => q.text === quote.text && q.speaker === quote.speaker);
-  const saveBtn = document.getElementById('save-quote-btn');
-  const saveLabel = document.getElementById('save-label');
-  if (isSaved) {
-    saveBtn.classList.add('saved');
-    saveLabel.textContent = 'Saved';
-  } else {
-    saveBtn.classList.remove('saved');
-    saveLabel.textContent = 'Save';
-  }
-}
-
-function refreshQuote() {
-  let newQuote = getRandomQuote();
-  // Avoid same quote if possible
-  while (QUOTES.length > 1 && newQuote.text === currentQuote?.text) {
-    newQuote = getRandomQuote();
-  }
-  displayQuote(newQuote);
-}
-
-function copyQuote() {
-  const text = `“${currentQuote.text}” — ${currentQuote.speaker || currentQuote.author || 'Unknown'}`;
-  copyText(text, 'Quote');
-}
-
-function toggleSaveQuote() {
-  const isSaved = savedQuotes.some(q => q.text === currentQuote.text && q.speaker === currentQuote.speaker);
-  if (isSaved) {
-    savedQuotes = savedQuotes.filter(q => !(q.text === currentQuote.text && q.speaker === currentQuote.speaker));
-  } else {
-    savedQuotes.push({ text: currentQuote.text, speaker: currentQuote.speaker });
-  }
-  saveFavorites();
-  // Update button
-  const saveBtn = document.getElementById('save-quote-btn');
-  const saveLabel = document.getElementById('save-label');
-  if (savedQuotes.some(q => q.text === currentQuote.text && q.speaker === currentQuote.speaker)) {
-    saveBtn.classList.add('saved');
-    saveLabel.textContent = 'Saved';
-    showToast('Quote saved to favorites.');
-  } else {
-    saveBtn.classList.remove('saved');
-    saveLabel.textContent = 'Save';
-    showToast('Quote removed from favorites.');
-  }
-}
-
-function showFavorites() {
-  const modal = document.getElementById('favorites-modal');
-  const list = document.getElementById('favorites-list');
-  if (savedQuotes.length === 0) {
-    list.innerHTML = '<p style="color: var(--text3); text-align: center;">No favorites yet. Click the bookmark button to save quotes!</p>';
-  } else {
-    list.innerHTML = savedQuotes.map((q, idx) => `
-      <div class="favorite-item" onclick="selectFavorite(${idx})">
-        <div class="quote-text">“${q.text}”</div>
-        <div class="quote-attribution">— ${q.speaker || 'Unknown'}</div>
-        <button class="remove-fav" onclick="event.stopPropagation(); removeFavorite(${idx})">✕</button>
-      </div>
-    `).join('');
-  }
-  modal.classList.add('open');
-}
-
-function closeFavorites() {
-  document.getElementById('favorites-modal').classList.remove('open');
-}
-
-function selectFavorite(idx) {
-  const q = savedQuotes[idx];
-  if (q) {
-    displayQuote(q);
-    closeFavorites();
-    showToast('Quote loaded from favorites.');
-  }
-}
-
-function removeFavorite(idx) {
-  savedQuotes.splice(idx, 1);
-  saveFavorites();
-  showFavorites(); // refresh list
-  // Update save button state for current quote if it was removed
-  if (currentQuote && !savedQuotes.some(q => q.text === currentQuote.text && q.speaker === currentQuote.speaker)) {
-    const saveBtn = document.getElementById('save-quote-btn');
-    const saveLabel = document.getElementById('save-label');
-    saveBtn.classList.remove('saved');
-    saveLabel.textContent = 'Save';
-  }
-  showToast('Quote removed from favorites.');
-}
-
-// Initialize quote card
-loadSavedQuotes();
-displayQuote(getRandomQuote());
 
 // ── GLOBAL STATE ──
 const appData = { activity:{}, readiness:{}, sleep:{}, spo2:{}, heartrate:{}, temperature:{}, sleeptime:{}, stress:{}, resilience:{}, daytimestress:{}, cardiovascularage:{}, sleepmodel:{} };
@@ -1767,7 +1254,6 @@ function renderScoreSection() {
     }).join('');
 
     return `<div class="score-card ${item.cat}">
-      <div class="corner"></div>
       <div class="score-card-label">${item.label}</div>
       <div class="ring-wrap">${ringSVG(score, item.color, 130)}</div>
       <div class="trend-bars">${trendBars}</div>
@@ -1804,6 +1290,20 @@ function scoreBadge(score, color) {
   return `<div class="detail-score-badge" style="background:${bg};color:${col}">${s} · ${scoreLabel(score)}</div>`;
 }
 
+// ── CARD COPY BUTTONS ──
+function addCopyButton(cardHtml, cardName) {
+  // We'll insert a copy button inside the card via JS after rendering.
+  // We'll wrap each card in a function that adds the button.
+  // Since we generate cards as strings, we'll insert the button with a data attribute.
+  // We'll modify each card rendering function to include a copy button div.
+  // For simplicity, we'll append the button after the card is rendered in the DOM.
+  // We'll do this by using a mutation observer or simply add after each card is created.
+  // Better: modify each render function to include the button.
+}
+
+// We'll modify each detail card function to include the copy button.
+// To avoid massive duplication, we'll generate the button HTML and attach an onclick.
+
 function copyButtonHtml(cardName) {
   return `<button class="copy-card-btn" onclick="copyCardContent(this.closest('.detail-card'), '${cardName}')" title="Copy ${cardName} data">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1828,7 +1328,6 @@ function renderReadinessCard() {
   const tempStr = tempDev !== undefined && tempDev !== '' ? (Number(tempDev) > 0 ? '+' : '') + Number(tempDev).toFixed(2) + '°C' : '--';
 
   return `<div class="detail-card">
-    <div class="corner"></div>
     ${copyButtonHtml('Readiness')}
     <div class="detail-card-header">
       <div class="detail-card-title">
@@ -2017,7 +1516,6 @@ function renderSleepCard() {
   }
 
   return `<div class="detail-card">
-    <div class="corner"></div>
     ${copyButtonHtml('Sleep')}
     <div class="detail-card-header">
       <div class="detail-card-title">
@@ -2101,7 +1599,6 @@ function renderActivityCard() {
   </div>` : '';
 
   return `<div class="detail-card">
-    <div class="corner"></div>
     ${copyButtonHtml('Activity')}
     <div class="detail-card-header">
       <div class="detail-card-title">
@@ -2129,7 +1626,6 @@ function renderStressResilienceCard() {
 
   if (!st && !res && !avgStress) {
     return `<div class="detail-card">
-      <div class="corner"></div>
       ${copyButtonHtml('Stress & Resilience')}
       <div class="detail-card-header">
         <div class="detail-card-title"><div class="cat-dot" style="background:var(--stress)"></div>Stress &amp; Resilience</div>
@@ -2151,7 +1647,6 @@ function renderStressResilienceCard() {
   const summaryColor = daySummary ? (summaryColors[daySummary] || 'var(--text2)') : 'var(--text2)';
 
   return `<div class="detail-card">
-    <div class="corner"></div>
     ${copyButtonHtml('Stress & Resilience')}
     <div class="detail-card-header">
       <div class="detail-card-title">
@@ -2238,7 +1733,6 @@ function renderCardioCard() {
   }).join('');
 
   return `<div class="detail-card">
-    <div class="corner"></div>
     ${copyButtonHtml('Cardiovascular Health')}
     <div class="detail-card-header">
       <div class="detail-card-title">
@@ -2286,7 +1780,6 @@ function renderBioCard() {
 
   if (!spo2Val && !avgBpm && !avgTemp) {
     return `<div class="detail-card">
-      <div class="corner"></div>
       ${copyButtonHtml('Biometrics')}
       <div class="detail-card-header">
         <div class="detail-card-title"><div class="cat-dot" style="background:var(--good)"></div>Biometrics</div>
@@ -2296,7 +1789,6 @@ function renderBioCard() {
   }
 
   return `<div class="detail-card">
-    <div class="corner"></div>
     ${copyButtonHtml('Biometrics')}
     <div class="detail-card-header">
       <div class="detail-card-title">
@@ -2335,7 +1827,9 @@ if ('serviceWorker' in navigator) {
 
 // ── CLOCK ──
 function updateClock() {
-  // Optional: if you want to display a clock somewhere
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  // You could add a clock element if desired.
 }
 setInterval(updateClock, 1000);
 updateClock();

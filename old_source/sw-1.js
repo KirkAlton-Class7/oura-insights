@@ -1,8 +1,8 @@
 // Oura Insights — Service Worker
 // Caches the app shell for full offline support.
-// Version bumped to v4 to refresh caches after style & interaction updates.
+// Version bumped to v3 to refresh caches after style & interaction updates.
 
-const CACHE_NAME = 'oura-insights-v4';
+const CACHE_NAME = 'oura-insights-v3';
 
 const SHELL_ASSETS = [
   './index.html',
