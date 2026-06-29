@@ -19,39 +19,41 @@
 <meta name="description" content="yOura Insights — Personal Oura Ring health dashboard">
 <meta name="mobile-web-app-capable" content="yes">
 
-<!-- Google Fonts: Inter + Outfit -->
+<!-- Google Fonts: Inter (body) + Outfit (headings) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
-  /* ── DESIGN SYSTEM ── */
+  /* ── NEW DESIGN SYSTEM (inspired by Tailwind Vite app) ── */
   :root {
+    --bg: #0f172a;               /* slate-950 */
     --bg-start: #0f172a;
-    --bg-end: #1e1b4b;
+    --bg-end: #1e1b4b;           /* indigo-950 */
     --surface: rgba(15, 23, 42, 0.7);
+    --surface-solid: #0f172a;
     --border: rgba(255,255,255,0.1);
     --border-hover: rgba(6, 182, 212, 0.3);
-    --text: #f1f5f9;
-    --text2: #94a3b8;
-    --text3: #64748b;
+    --text: #f1f5f9;             /* slate-100 */
+    --text2: #94a3b8;            /* slate-400 */
+    --text3: #64748b;            /* slate-500 */
     --accent-cyan: #06b6d4;
     --accent-purple: #8b5cf6;
     --gradient-main: linear-gradient(135deg, #06b6d4, #8b5cf6);
-    --readiness: #06b6d4;
-    --readiness-dim: rgba(6,182,212,0.15);
-    --sleep: #8b5cf6;
-    --sleep-dim: rgba(139,92,246,0.15);
-    --activity: #f59e0b;
-    --activity-dim: rgba(245,158,11,0.15);
-    --optimal: #10b981;
+    --readiness: #06b6d4;        /* cyan */
+    --readiness-dim: rgba(6, 182, 212, 0.15);
+    --sleep: #8b5cf6;           /* purple */
+    --sleep-dim: rgba(139, 92, 246, 0.15);
+    --activity: #f59e0b;        /* amber */
+    --activity-dim: rgba(245, 158, 11, 0.15);
+    --optimal: #10b981;         /* emerald */
     --good: #06b6d4;
     --fair: #f59e0b;
-    --attention: #f43f5e;
+    --attention: #f43f5e;       /* rose */
     --stress: #f43f5e;
-    --stress-dim: rgba(244,63,94,0.15);
+    --stress-dim: rgba(244, 63, 94, 0.15);
     --cardio: #06b6d4;
-    --cardio-dim: rgba(6,182,212,0.15);
+    --cardio-dim: rgba(6, 182, 212, 0.15);
     --radius: 16px;
     --radius-sm: 12px;
     --shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
@@ -68,6 +70,8 @@
     overflow-x: hidden;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -77,6 +81,8 @@
   ::-webkit-scrollbar-track { background: rgba(15,23,42,0.5); border-radius: 10px; }
   ::-webkit-scrollbar-thumb { background: var(--gradient-main); border-radius: 10px; }
   ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #0891b2, #7c3aed); }
+
+  /* Selection */
   ::selection { background: rgba(6,182,212,0.3); color: #fff; }
 
   /* ── ANIMATIONS ── */
@@ -84,10 +90,13 @@
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
   }
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+  @keyframes glow {
+    0%, 100% { opacity: 0.5; filter: blur(4px); }
+    50% { opacity: 1; filter: blur(8px); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -97,8 +106,13 @@
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
   }
+
   .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-glow { animation: glow 2s ease-in-out infinite; }
+  .animate-slide-in { animation: slideIn 0.5s ease-out; }
   .fade-up { animation: fadeUp 0.4s ease forwards; }
+
+  /* Animation delays */
   .stagger-1 { animation-delay: 0.05s; opacity: 0; }
   .stagger-2 { animation-delay: 0.1s; opacity: 0; }
   .stagger-3 { animation-delay: 0.15s; opacity: 0; }
@@ -121,31 +135,6 @@
     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1);
   }
 
-  /* ── TOAST ── */
-  #toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--surface);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-hover);
-    border-radius: var(--radius-sm);
-    padding: 12px 24px;
-    color: var(--text);
-    font-size: 0.9rem;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 9999;
-    pointer-events: none;
-  }
-  #toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-  #toast .check { color: var(--optimal); margin-right: 8px; }
-
   /* ── UPLOAD SCREEN ── */
   #upload-screen {
     min-height: 100vh;
@@ -158,7 +147,12 @@
                 radial-gradient(ellipse 50% 40% at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%),
                 linear-gradient(135deg, var(--bg-start) 0%, var(--bg-start) 50%, var(--bg-end) 100%);
   }
-  .upload-logo { margin-bottom: 32px; }
+
+  .upload-logo {
+    margin-bottom: 32px;
+    animation: float 3s ease-in-out infinite;
+  }
+
   .upload-title {
     font-family: 'Outfit', sans-serif;
     font-size: 2.6rem;
@@ -172,6 +166,12 @@
     background-size: 200% 200%;
     animation: gradientShift 3s ease infinite;
   }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
   .upload-subtitle {
     color: var(--text2);
     font-size: 1rem;
@@ -180,6 +180,7 @@
     max-width: 400px;
     line-height: 1.6;
   }
+
   .upload-zone {
     width: 100%;
     max-width: 540px;
@@ -193,7 +194,8 @@
     border-radius: var(--radius);
     position: relative;
   }
-  .upload-zone:hover, .upload-zone.drag-over {
+  .upload-zone:hover,
+  .upload-zone.drag-over {
     border-color: var(--accent-cyan);
     background: rgba(6,182,212,0.05);
     box-shadow: 0 0 40px rgba(6,182,212,0.08);
@@ -206,7 +208,9 @@
     width: 100%;
     height: 100%;
   }
+
   .upload-icon { margin-bottom: 16px; color: var(--accent-cyan); }
+
   .upload-zone h3 {
     font-family: 'Outfit', sans-serif;
     font-size: 1.1rem;
@@ -218,6 +222,7 @@
     font-size: 0.875rem;
     margin-bottom: 24px;
   }
+
   .file-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -241,10 +246,8 @@
     background: rgba(6,182,212,0.08);
   }
   .file-item .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--text3);
-    flex-shrink: 0;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text3); flex-shrink: 0;
   }
   .file-item.loaded .dot { background: var(--accent-cyan); }
 
@@ -273,6 +276,7 @@
     transform: translateY(-2px);
     box-shadow: 0 12px 40px rgba(6,182,212,0.4);
   }
+
   .upload-note {
     margin-top: 20px;
     font-size: 0.78rem;
@@ -299,8 +303,6 @@
     padding: 24px 0 0;
     margin-bottom: 24px;
     border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-    gap: 12px;
   }
   .dash-logo {
     display: flex;
@@ -314,42 +316,10 @@
     color: var(--text);
   }
   .dash-logo span { color: var(--accent-cyan); }
-  .dash-header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
   .dash-date-full {
     font-size: 0.85rem;
     color: var(--text2);
     font-weight: 400;
-    white-space: nowrap;
-  }
-  .copy-snapshot-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 50px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    backdrop-filter: blur(8px);
-    color: var(--text2);
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.25s;
-    font-family: 'Inter', sans-serif;
-  }
-  .copy-snapshot-btn:hover {
-    border-color: var(--accent-cyan);
-    color: var(--accent-cyan);
-    box-shadow: 0 0 20px rgba(6,182,212,0.15);
-  }
-  .copy-snapshot-btn .icon { width: 16px; height: 16px; }
-  .copy-snapshot-btn.copied {
-    border-color: var(--optimal);
-    color: var(--optimal);
   }
 
   /* Date Nav */
@@ -410,7 +380,7 @@
     opacity: 0.5;
   }
 
-  /* Score section */
+  /* Score rings section */
   .score-section {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -483,7 +453,6 @@
     height: 100%;
     justify-content: flex-end;
     cursor: pointer;
-    position: relative;
   }
   .trend-bar {
     width: 100%;
@@ -494,30 +463,6 @@
   .trend-bar-wrap:hover .trend-bar { opacity: 0.8; }
   .trend-bar-wrap.active .trend-bar { opacity: 1; }
   .trend-bar-wrap:not(.active) .trend-bar { opacity: 0.35; }
-
-  /* Tooltip for trend bars */
-  .trend-tooltip {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--surface);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 0.7rem;
-    color: var(--text);
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    z-index: 10;
-    font-family: 'Inter', sans-serif;
-  }
-  .trend-bar-wrap:hover .trend-tooltip {
-    opacity: 1;
-  }
 
   /* Detail cards */
   .details-wrap {
@@ -532,7 +477,6 @@
     border-radius: var(--radius);
     padding: 24px;
     transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-    position: relative;
   }
   .detail-card:hover {
     border-color: var(--border-hover);
@@ -569,31 +513,6 @@
     background: rgba(255,255,255,0.06);
     color: var(--text2);
   }
-
-  /* Copy button on cards */
-  .copy-card-btn {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px;
-    color: var(--text3);
-    cursor: pointer;
-    transition: all 0.2s;
-    opacity: 0;
-    backdrop-filter: blur(4px);
-  }
-  .detail-card:hover .copy-card-btn {
-    opacity: 1;
-  }
-  .copy-card-btn:hover {
-    border-color: var(--accent-cyan);
-    color: var(--accent-cyan);
-    background: rgba(6,182,212,0.1);
-  }
-  .copy-card-btn .icon { width: 16px; height: 16px; }
 
   /* Sub-scores */
   .sub-scores {
@@ -737,17 +656,22 @@
     margin-top: 4px;
   }
 
+  /* Dividers */
   .section-divider {
     height: 1px;
     background: var(--border);
     margin: 16px 0;
   }
+
+  /* No data */
   .no-data {
     color: var(--text3);
     font-size: 0.875rem;
     text-align: center;
     padding: 20px;
   }
+
+  /* Spinner */
   .spinner {
     width: 40px; height: 40px;
     border: 3px solid var(--border);
@@ -765,15 +689,20 @@
     .stats-grid { grid-template-columns: 1fr 1fr; }
     .bio-grid { grid-template-columns: 1fr; }
     .dash-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .dash-header-right { width: 100%; justify-content: space-between; }
     .file-list { grid-template-columns: 1fr; }
     .upload-title { font-size: 2rem; }
     #dashboard { padding: 0 12px 24px; }
-    .copy-card-btn { opacity: 0.4; }
   }
   @media (max-width: 480px) {
     .stats-grid { grid-template-columns: 1fr; }
-    .dash-date-full { font-size: 0.7rem; }
+  }
+
+  /* ── UTILITY OVERRIDES ── */
+  .gradient-text {
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 </style>
 </head>
@@ -841,16 +770,7 @@
       </svg>
       <span>yOura</span> Insights
     </div>
-    <div class="dash-header-right">
-      <span class="dash-date-full" id="dash-date-full"></span>
-      <button class="copy-snapshot-btn" id="copy-snapshot-btn" onclick="copyDashboardSnapshot()">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 4v16h16V4H4zm2 2h12v12H6V6z"/>
-          <path d="M10 10h4v4h-4v-4z"/>
-        </svg>
-        Copy Snapshot
-      </button>
-    </div>
+    <div class="dash-date-full" id="dash-date-full"></div>
   </div>
 
   <div class="date-nav-wrap fade-up stagger-2">
@@ -862,136 +782,7 @@
   <div class="details-wrap fade-up stagger-4" id="details-wrap"></div>
 </div>
 
-<!-- TOAST -->
-<div id="toast"><span class="check">✓</span><span id="toast-message">Copied!</span></div>
-
 <script>
-// ── TOAST ──
-let toastTimeout = null;
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  const msgEl = document.getElementById('toast-message');
-  msgEl.textContent = message;
-  toast.classList.add('show');
-  if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => {
-    toast.classList.remove('show');
-    toastTimeout = null;
-  }, 2500);
-}
-
-// ── COPY FUNCTIONS ──
-function copyText(text, label = 'Data') {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast(`${label} copied to clipboard.`);
-    }).catch(() => {
-      // fallback
-      fallbackCopy(text, label);
-    });
-  } else {
-    fallbackCopy(text, label);
-  }
-}
-
-function fallbackCopy(text, label) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.left = '-9999px';
-  ta.style.top = '-9999px';
-  document.body.appendChild(ta);
-  ta.select();
-  try {
-    document.execCommand('copy');
-    showToast(`${label} copied to clipboard.`);
-  } catch (e) {
-    showToast(`Failed to copy ${label}. Please copy manually.`);
-  }
-  document.body.removeChild(ta);
-}
-
-// ── SNAPSHOT ──
-function getDashboardSnapshot() {
-  let lines = [];
-  lines.push('yOura Insights Dashboard Snapshot');
-  lines.push('==================================');
-  lines.push(`Date: ${document.getElementById('dash-date-full').textContent}`);
-  lines.push('');
-  // Add score cards
-  const scoreCards = document.querySelectorAll('.score-card');
-  scoreCards.forEach(card => {
-    const label = card.querySelector('.score-card-label')?.textContent || '';
-    const score = card.querySelector('.ring-wrap text:first-child')?.textContent || '--';
-    const status = card.querySelector('.ring-wrap text:last-child')?.textContent || '';
-    lines.push(`${label}: ${score} (${status})`);
-  });
-  lines.push('');
-  // Add detail cards
-  document.querySelectorAll('.detail-card').forEach(card => {
-    const title = card.querySelector('.detail-card-title')?.textContent?.trim() || 'Details';
-    lines.push(`--- ${title} ---`);
-    // Get all sub-score values
-    card.querySelectorAll('.sub-score-item').forEach(item => {
-      const label = item.querySelector('.sub-score-label')?.textContent || '';
-      const val = item.querySelector('.sub-score-val')?.textContent || '';
-      if (label && val) lines.push(`${label}: ${val}`);
-    });
-    // Get stats
-    card.querySelectorAll('.stat-box').forEach(stat => {
-      const label = stat.querySelector('.stat-box-label')?.textContent || '';
-      const val = stat.querySelector('.stat-box-value')?.textContent || '';
-      const unit = stat.querySelector('.stat-box-unit')?.textContent || '';
-      if (label && val) lines.push(`${label}: ${val} ${unit}`.trim());
-    });
-    lines.push('');
-  });
-  return lines.join('\n');
-}
-
-function copyDashboardSnapshot() {
-  const snapshot = getDashboardSnapshot();
-  copyText(snapshot, 'Dashboard snapshot');
-  const btn = document.getElementById('copy-snapshot-btn');
-  btn.classList.add('copied');
-  setTimeout(() => btn.classList.remove('copied'), 3000);
-}
-
-// ── COPY CARD CONTENT ──
-function copyCardContent(cardElement, cardName) {
-  // Build a text representation of the card
-  let lines = [];
-  const title = cardElement.querySelector('.detail-card-title')?.textContent?.trim() || cardName;
-  lines.push(`${title} — ${document.getElementById('dash-date-full').textContent}`);
-  lines.push('----------------------------------------');
-  // Sub-scores
-  cardElement.querySelectorAll('.sub-score-item').forEach(item => {
-    const label = item.querySelector('.sub-score-label')?.textContent || '';
-    const val = item.querySelector('.sub-score-val')?.textContent || '';
-    if (label && val) lines.push(`${label}: ${val}`);
-  });
-  // Stats
-  cardElement.querySelectorAll('.stat-box').forEach(stat => {
-    const label = stat.querySelector('.stat-box-label')?.textContent || '';
-    const val = stat.querySelector('.stat-box-value')?.textContent || '';
-    const unit = stat.querySelector('.stat-box-unit')?.textContent || '';
-    if (label && val) lines.push(`${label}: ${val} ${unit}`.trim());
-  });
-  // Extra bio items
-  cardElement.querySelectorAll('.bio-item').forEach(item => {
-    const label = item.querySelector('.bio-item-label')?.textContent || '';
-    const val = item.querySelector('.bio-item-value')?.textContent || '';
-    const unit = item.querySelector('.bio-item-unit')?.textContent || '';
-    if (label && val) lines.push(`${label}: ${val} ${unit}`.trim());
-  });
-  if (lines.length <= 1) {
-    // fallback: grab all text
-    const text = cardElement.textContent.replace(/\s+/g, ' ').trim();
-    lines = [text];
-  }
-  copyText(lines.join('\n'), `${cardName} data`);
-}
-
 // ── GLOBAL STATE ──
 const appData = { activity:{}, readiness:{}, sleep:{}, spo2:{}, heartrate:{}, temperature:{}, sleeptime:{}, stress:{}, resilience:{}, daytimestress:{}, cardiovascularage:{}, sleepmodel:{} };
 let dateWindow = [];
@@ -1080,6 +871,7 @@ async function handleFiles(files) {
     const rows = parseCSV(text);
     const dataKey = FILE_MAP[key];
 
+    // Group by date
     const grouped = {};
     for (const row of rows) {
       const d = dateKey(row.day || row.timestamp || '');
@@ -1099,6 +891,7 @@ async function handleFiles(files) {
 
 // ── GENERATE DASHBOARD ──
 function generateDashboard() {
+  // Find all dates from activity, readiness, sleep
   const allDates = new Set();
   ['activity','readiness','sleep','spo2','stress','resilience','cardiovascularage'].forEach(k => {
     Object.keys(appData[k]).forEach(d => allDates.add(d));
@@ -1111,6 +904,7 @@ function generateDashboard() {
   const idx = sorted.indexOf(mostRecent);
   const startIdx = Math.max(0, idx - 6);
   dateWindow = sorted.slice(startIdx, idx + 1);
+  // Pad to 7 if we have fewer
   selectedDate = mostRecent;
 
   document.getElementById('upload-screen').style.display = 'none';
@@ -1245,10 +1039,7 @@ function renderScoreSection() {
       const sc = rec?.score ? Number(rec.score) : 0;
       const h = sc ? Math.max(8, Math.round(sc * 0.32)) : 4;
       const c = sc ? scoreColor(sc) : 'rgba(255,255,255,0.1)';
-      const dateObj = new Date(d + 'T12:00:00');
-      const label = dateObj.toLocaleDateString('en-US', { month:'short', day:'numeric' });
       return `<div class="trend-bar-wrap ${d === selectedDate ? 'active' : ''}" onclick="selectDate('${d}')">
-        <div class="trend-tooltip">${label}: ${sc || '--'}</div>
         <div class="trend-bar" style="height:${h}px;background:${c}"></div>
       </div>`;
     }).join('');
@@ -1290,30 +1081,7 @@ function scoreBadge(score, color) {
   return `<div class="detail-score-badge" style="background:${bg};color:${col}">${s} · ${scoreLabel(score)}</div>`;
 }
 
-// ── CARD COPY BUTTONS ──
-function addCopyButton(cardHtml, cardName) {
-  // We'll insert a copy button inside the card via JS after rendering.
-  // We'll wrap each card in a function that adds the button.
-  // Since we generate cards as strings, we'll insert the button with a data attribute.
-  // We'll modify each card rendering function to include a copy button div.
-  // For simplicity, we'll append the button after the card is rendered in the DOM.
-  // We'll do this by using a mutation observer or simply add after each card is created.
-  // Better: modify each render function to include the button.
-}
-
-// We'll modify each detail card function to include the copy button.
-// To avoid massive duplication, we'll generate the button HTML and attach an onclick.
-
-function copyButtonHtml(cardName) {
-  return `<button class="copy-card-btn" onclick="copyCardContent(this.closest('.detail-card'), '${cardName}')" title="Copy ${cardName} data">
-    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M4 4v16h16V4H4zm2 2h12v12H6V6z"/>
-      <path d="M10 10h4v4h-4v-4z"/>
-    </svg>
-  </button>`;
-}
-
-// ── READINESS CARD ──
+// READINESS
 function renderReadinessCard() {
   const r = appData.readiness[selectedDate]?.[0];
   const contrib = r?.contributors || {};
@@ -1328,7 +1096,6 @@ function renderReadinessCard() {
   const tempStr = tempDev !== undefined && tempDev !== '' ? (Number(tempDev) > 0 ? '+' : '') + Number(tempDev).toFixed(2) + '°C' : '--';
 
   return `<div class="detail-card">
-    ${copyButtonHtml('Readiness')}
     <div class="detail-card-header">
       <div class="detail-card-title">
         <div class="cat-dot" style="background:var(--readiness)"></div>
@@ -1349,12 +1116,13 @@ function renderReadinessCard() {
   </div>`;
 }
 
-// ── SLEEP CARD ──
+// SLEEP
 function renderSleepCard() {
   const s = appData.sleep[selectedDate]?.[0];
   const contrib = s?.contributors || {};
   const st = appData.sleeptime[selectedDate]?.[0];
 
+  // sleepmodel — pick the 'long_sleep' record for the day, fall back to first
   const smAll = appData.sleepmodel[selectedDate] || [];
   const sm = smAll.find(r => r.type === 'long_sleep') || smAll[0] || null;
 
@@ -1364,6 +1132,7 @@ function renderSleepCard() {
     ? `<div class="sub-scores">${available.map(k => subScoreBar(k, contrib[k], 'var(--sleep)')).join('')}</div>`
     : `<div class="no-data">No sleep score data for this date</div>`;
 
+  // ── SLEEP STAGE BREAKDOWN from sleepmodel ──
   let stagesHtml = '';
   if (sm) {
     const deep  = Number(sm.deep_sleep_duration  || 0);
@@ -1381,11 +1150,13 @@ function renderSleepCard() {
     const bedEnd   = sm.bedtime_end   ? fmtT(new Date(sm.bedtime_end))   : '--';
     const latSecs  = Number(sm.latency || 0);
 
+    // Stage colours
     const DEEP_C  = '#3b82f6';
     const REM_C   = '#8b5cf6';
     const LIGHT_C = '#06b6d4';
     const AWAKE_C = 'rgba(255,255,255,0.15)';
 
+    // Donut SVG
     function donutArc(cx, cy, r, startPct, pct, color) {
       if (pct <= 0) return '';
       const tau = 2 * Math.PI;
@@ -1414,6 +1185,7 @@ function renderSleepCard() {
       <text x="70" y="80" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10" font-family="Inter">asleep</text>
     </svg>`;
 
+    // Stage legend rows
     const stageRows = [
       { label:'Deep',  dur:deep,  color:DEEP_C,  pct:total?deep/total:0 },
       { label:'REM',   dur:rem,   color:REM_C,   pct:total?rem/total:0  },
@@ -1429,22 +1201,47 @@ function renderSleepCard() {
         <div style="font-size:0.75rem;color:var(--text3);width:36px;text-align:right">${(row.pct*100).toFixed(0)}%</div>
       </div>`).join('');
 
+    // ── HYPNOGRAM ──
     let hypnoHtml = '';
     const phaseStr = sm.sleep_phase_5_min || sm.sleep_phase_30_sec || '';
     if (phaseStr && phaseStr.length > 4) {
+      // 1=awake,2=light,3=REM,4=deep  (Oura encoding)
       const phases = phaseStr.split('').map(Number).filter(n => n >= 1 && n <= 4);
-      const stageY = { 1: 8, 2: 28, 3: 48, 4: 68 };
+      const stageY = { 1: 8, 2: 28, 3: 48, 4: 68 }; // y-positions top=awake bottom=deep
       const stageC = { 1: AWAKE_C, 2: LIGHT_C, 3: REM_C, 4: DEEP_C };
       const W = 520, H = 90, padL = 0, padR = 0;
       const n = phases.length;
       const segW = (W - padL - padR) / n;
 
+      // Build filled path
+      let pathD = '';
+      let fillD = '';
+      const baseY = H;
+      phases.forEach((p, i) => {
+        const x = padL + i * segW;
+        const y = stageY[p];
+        if (i === 0) { pathD += `M${x.toFixed(1)},${y}`; fillD += `M${x.toFixed(1)},${baseY} L${x.toFixed(1)},${y}`; }
+        else { pathD += ` L${x.toFixed(1)},${y}`; fillD += ` L${x.toFixed(1)},${y}`; }
+      });
+      // Close fill path along bottom
+      const lastX = (padL + (n-1) * segW).toFixed(1);
+      fillD += ` L${lastX},${baseY} Z`;
+
+      // Coloured segment bars (simpler, more readable)
       const bars2 = phases.map((p, i) => {
         const x = padL + i * segW;
         const y = stageY[p];
         const barH = H - y;
         return `<rect x="${x.toFixed(1)}" y="${y}" width="${(segW+0.5).toFixed(1)}" height="${barH}" fill="${stageC[p]}" opacity="0.7"/>`;
       }).join('');
+
+      // Y axis labels
+      const yLabels = [
+        { label:'Awake', y: stageY[1]+4 },
+        { label:'Light', y: stageY[2]+4 },
+        { label:'REM',   y: stageY[3]+4 },
+        { label:'Deep',  y: stageY[4]+4 },
+      ];
 
       hypnoHtml = `
       <div class="section-divider"></div>
@@ -1468,6 +1265,7 @@ function renderSleepCard() {
       </div>`;
     }
 
+    // Extra biometrics from sleepmodel
     const avgHR  = sm.average_heart_rate  ? Number(sm.average_heart_rate).toFixed(0)  : '--';
     const avgHRV = sm.average_hrv         ? Number(sm.average_hrv).toFixed(0)          : '--';
     const avgBr  = sm.average_breath      ? Number(sm.average_breath).toFixed(1)       : '--';
@@ -1498,6 +1296,7 @@ function renderSleepCard() {
     </div>`;
   }
 
+  // Optimal bedtime
   let bedtimeHtml = '';
   if (st?.optimal_bedtime) {
     const ob = st.optimal_bedtime;
@@ -1516,7 +1315,6 @@ function renderSleepCard() {
   }
 
   return `<div class="detail-card">
-    ${copyButtonHtml('Sleep')}
     <div class="detail-card-header">
       <div class="detail-card-title">
         <div class="cat-dot" style="background:var(--sleep)"></div>
@@ -1530,7 +1328,7 @@ function renderSleepCard() {
   </div>`;
 }
 
-// ── ACTIVITY CARD ──
+// ACTIVITY
 function renderActivityCard() {
   const a = appData.activity[selectedDate]?.[0];
   const contrib = a?.contributors || {};
@@ -1599,7 +1397,6 @@ function renderActivityCard() {
   </div>` : '';
 
   return `<div class="detail-card">
-    ${copyButtonHtml('Activity')}
     <div class="detail-card-header">
       <div class="detail-card-title">
         <div class="cat-dot" style="background:var(--activity)"></div>
@@ -1613,11 +1410,12 @@ function renderActivityCard() {
   </div>`;
 }
 
-// ── STRESS & RESILIENCE ──
+// STRESS & RESILIENCE
 function renderStressResilienceCard() {
   const st = appData.stress[selectedDate]?.[0];
   const res = appData.resilience[selectedDate]?.[0];
 
+  // Daytime stress: aggregate stress/recovery values for this date
   const dtRecs = appData.daytimestress[selectedDate] || [];
   const stressVals = dtRecs.map(r => Number(r.stress_value)).filter(v => !isNaN(v) && v > 0);
   const recovVals = dtRecs.map(r => Number(r.recovery_value)).filter(v => !isNaN(v) && v > 0);
@@ -1626,7 +1424,6 @@ function renderStressResilienceCard() {
 
   if (!st && !res && !avgStress) {
     return `<div class="detail-card">
-      ${copyButtonHtml('Stress & Resilience')}
       <div class="detail-card-header">
         <div class="detail-card-title"><div class="cat-dot" style="background:var(--stress)"></div>Stress &amp; Resilience</div>
       </div>
@@ -1634,11 +1431,13 @@ function renderStressResilienceCard() {
     </div>`;
   }
 
+  // Resilience level display
   const levelColors = { exceptional:'var(--optimal)', strong:'var(--good)', solid:'var(--fair)', adequate:'#f59e0b', limited:'var(--attention)' };
   const levelLabel = res?.level ? res.level.charAt(0).toUpperCase() + res.level.slice(1) : null;
   const levelColor = res?.level ? (levelColors[res.level] || 'var(--text2)') : 'var(--text2)';
   const resContrib = res?.contributors || {};
 
+  // Stress time bars
   const stressHigh = st?.stress_high ? Number(st.stress_high) : 0;
   const recovHigh = st?.recovery_high ? Number(st.recovery_high) : 0;
   const totalTime = stressHigh + recovHigh || 1;
@@ -1647,7 +1446,6 @@ function renderStressResilienceCard() {
   const summaryColor = daySummary ? (summaryColors[daySummary] || 'var(--text2)') : 'var(--text2)';
 
   return `<div class="detail-card">
-    ${copyButtonHtml('Stress & Resilience')}
     <div class="detail-card-header">
       <div class="detail-card-title">
         <div class="cat-dot" style="background:var(--stress)"></div>
@@ -1702,7 +1500,7 @@ function renderStressResilienceCard() {
   </div>`;
 }
 
-// ── CARDIOVASCULAR AGE ──
+// CARDIOVASCULAR AGE
 function renderCardioCard() {
   const c = appData.cardiovascularage[selectedDate]?.[0];
   if (!c) return '';
@@ -1710,6 +1508,7 @@ function renderCardioCard() {
   const vasAge = c.vascular_age ? Number(c.vascular_age) : null;
   const pwv = c.pulse_wave_velocity ? Number(c.pulse_wave_velocity).toFixed(2) : null;
 
+  // 7-day trend for vascular age
   const trendItems = dateWindow.map(d => {
     const rec = appData.cardiovascularage[d]?.[0];
     return rec ? Number(rec.vascular_age) : null;
@@ -1724,16 +1523,12 @@ function renderCardioCard() {
     if (v === null) return `<div class="trend-bar-wrap" style="opacity:0.2"><div class="trend-bar" style="height:4px;background:var(--cardio);border-radius:3px"></div></div>`;
     const range = (maxAge - minAge) || 1;
     const h = Math.max(6, Math.round(((v - minAge) / range) * 26) + 6);
-    const dateObj = new Date(d + 'T12:00:00');
-    const label = dateObj.toLocaleDateString('en-US', { month:'short', day:'numeric' });
     return `<div class="trend-bar-wrap ${d === selectedDate ? 'active' : ''}">
-      <div class="trend-tooltip">${label}: ${v}</div>
       <div class="trend-bar" style="height:${h}px;background:var(--cardio);border-radius:3px 3px 0 0"></div>
     </div>`;
   }).join('');
 
   return `<div class="detail-card">
-    ${copyButtonHtml('Cardiovascular Health')}
     <div class="detail-card-header">
       <div class="detail-card-title">
         <div class="cat-dot" style="background:var(--cardio)"></div>
@@ -1760,18 +1555,20 @@ function renderCardioCard() {
   </div>`;
 }
 
-// ── BIOMETRICS ──
+// BIOMETRICS
 function renderBioCard() {
   const spo2Rec = appData.spo2[selectedDate]?.[0];
   const spo2Val = spo2Rec?.spo2_percentage?.average ? Number(spo2Rec.spo2_percentage.average).toFixed(1) : null;
   const bdi = spo2Rec?.breathing_disturbance_index;
 
+  // Heart rate for this date
   const hrRecs = appData.heartrate[selectedDate] || [];
   const bpms = hrRecs.map(r => Number(r.bpm)).filter(v => v > 0 && v < 250);
   const avgBpm = bpms.length ? Math.round(bpms.reduce((a,b)=>a+b,0)/bpms.length) : null;
   const minBpm = bpms.length ? Math.min(...bpms) : null;
   const maxBpm = bpms.length ? Math.max(...bpms) : null;
 
+  // Temperature for this date
   const tempRecs = appData.temperature[selectedDate] || [];
   const temps = tempRecs.map(r => Number(r.skin_temp)).filter(v => v > 0);
   const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : null;
@@ -1780,7 +1577,6 @@ function renderBioCard() {
 
   if (!spo2Val && !avgBpm && !avgTemp) {
     return `<div class="detail-card">
-      ${copyButtonHtml('Biometrics')}
       <div class="detail-card-header">
         <div class="detail-card-title"><div class="cat-dot" style="background:var(--good)"></div>Biometrics</div>
       </div>
@@ -1789,7 +1585,6 @@ function renderBioCard() {
   }
 
   return `<div class="detail-card">
-    ${copyButtonHtml('Biometrics')}
     <div class="detail-card-header">
       <div class="detail-card-title">
         <div class="cat-dot" style="background:var(--good)"></div>
@@ -1815,7 +1610,6 @@ function renderBioCard() {
     </div>
   </div>`;
 }
-
 // ── SERVICE WORKER REGISTRATION ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -1824,16 +1618,6 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.warn('SW registration failed:', err));
   });
 }
-
-// ── CLOCK ──
-function updateClock() {
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  // You could add a clock element if desired.
-}
-setInterval(updateClock, 1000);
-updateClock();
-
 </script>
 </body>
 </html>

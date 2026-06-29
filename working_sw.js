@@ -1,8 +1,8 @@
 // Oura Insights — Service Worker
 // Caches the app shell for full offline support.
-// Version bumped to v3 to refresh caches after style & interaction updates.
+// Version bumped to v2 to refresh caches after style update.
 
-const CACHE_NAME = 'oura-insights-v3';
+const CACHE_NAME = 'oura-insights-v2';
 
 const SHELL_ASSETS = [
   './index.html',
@@ -18,6 +18,7 @@ const SHELL_ASSETS = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
+      // Cache local assets reliably; best-effort for external fonts
       const local = SHELL_ASSETS.filter(u => u.startsWith('./'));
       const external = SHELL_ASSETS.filter(u => !u.startsWith('./'));
       return cache.addAll(local).then(() =>
@@ -40,6 +41,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
+  // Skip non-GET and browser-extension requests
   if (event.request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
 
@@ -48,12 +50,14 @@ self.addEventListener('fetch', event => {
       if (cached) return cached;
 
       return fetch(event.request).then(response => {
+        // Cache successful responses for shell assets
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
       }).catch(() => {
+        // Offline fallback: return index.html for navigation requests
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
