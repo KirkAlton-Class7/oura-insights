@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
@@ -63,6 +64,13 @@ function CalendarDate({
   );
 }
 
+function CalendarLayer({ scope, children }) {
+  if (scope === 'viewport' && typeof document !== 'undefined') {
+    return createPortal(children, document.body);
+  }
+  return children;
+}
+
 export default function DateNav({
   dates,
   availableDates,
@@ -72,6 +80,7 @@ export default function DateNav({
   onNext,
   canPrevious,
   canNext,
+  calendarScope = 'viewport',
 }) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [calendarView, setCalendarView] = useState('month');
@@ -200,21 +209,25 @@ export default function DateNav({
         </div>
       </div>
 
-      <AnimatePresence>
-        {isCalendarOpen && (
+      <CalendarLayer scope={calendarScope}>
+        <AnimatePresence>
+          {isCalendarOpen && (
           <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
+            className={`${calendarScope === 'panel' ? 'absolute z-50 items-center rounded-3xl bg-slate-950/75 p-4 backdrop-blur-sm' : 'fixed z-[100] items-start overflow-y-auto bg-slate-950/75 p-4 backdrop-blur-sm'} inset-0 flex justify-center`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onMouseDown={() => setIsCalendarOpen(false)}
+            data-calendar-dialog="true"
           >
             <motion.div
               role="dialog"
               aria-modal="true"
               aria-label="Choose an available date"
-              className={`max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-white/10 bg-slate-900/95 shadow-2xl shadow-black/50 ${
-                calendarView === 'month' ? 'max-w-3xl' : 'max-w-6xl'
+              className={`${calendarScope === 'panel' ? 'h-[calc(100%-2rem)] max-h-[calc(100%-2rem)] rounded-3xl bg-slate-900/95' : 'my-auto max-h-[calc(100vh-2rem)] rounded-3xl bg-slate-900/95'} w-full overflow-y-auto border border-white/10 shadow-2xl shadow-black/50 ${
+                calendarScope === 'panel'
+                  ? calendarView === 'month' ? 'max-w-2xl' : 'max-w-5xl'
+                  : calendarView === 'month' ? 'max-w-3xl' : 'max-w-6xl'
               }`}
               initial={{ opacity: 0, scale: 0.97, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -340,8 +353,9 @@ export default function DateNav({
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </CalendarLayer>
     </>
   );
 }

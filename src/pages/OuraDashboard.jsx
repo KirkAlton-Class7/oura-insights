@@ -1,10 +1,12 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import UploadScreen from '../components/UploadScreen';
 import DateNav from '../components/DateNav';
 import QuoteCard from '../components/QuoteCard';
-import ScoreCard from '../components/ScoreCard';
+import ScoreSummaryGrid from '../components/ScoreSummaryGrid';
+import CompareModal from '../components/CompareModal';
 import ReadinessCard from '../components/ReadinessCard';
 import SleepCard from '../components/SleepCard';
 import ActivityCard from '../components/ActivityCard';
@@ -15,61 +17,23 @@ import BackgroundManager from '../components/BackgroundManager';
 import { buildDashboardSnapshot } from '../utils/snapshot';
 import { writeClipboardText } from '../utils/clipboard';
 import { useToast } from '../context/ToastContext';
-import { getScoreColor } from '../utils/colors';
-
-const groupDatesIntoWeeks = (dates) => {
-  const weekStarts = new Set();
-
-  Array.from(new Set(dates)).sort().forEach((date) => {
-    const [year, month, day] = date.split('-').map(Number);
-    const value = Date.UTC(year, month - 1, day);
-    weekStarts.add(value - new Date(value).getUTCDay() * 86400000);
-  });
-
-  return Array.from(weekStarts)
-    .sort((a, b) => a - b)
-    .map(weekStart => Array.from({ length: 7 }, (_, offset) => (
-      new Date(weekStart + offset * 86400000).toISOString().slice(0, 10)
-    )));
-};
-
-const getWeekday = (date) => {
-  const [year, month, day] = date.split('-').map(Number);
-  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
-};
-
-const selectDateInWeek = (currentDate, dates) => {
-  if (!dates.length) return '';
-  const targetWeekday = getWeekday(currentDate);
-  const matchingDate = dates.find(date => getWeekday(date) === targetWeekday);
-  if (matchingDate) return matchingDate;
-
-  return dates.reduce((closest, date) => (
-    Math.abs(getWeekday(date) - targetWeekday) < Math.abs(getWeekday(closest) - targetWeekday)
-      ? date
-      : closest
-  ), dates[0]);
-};
-
-const findWeekIndex = (weeks, date) => {
-  const index = weeks.findIndex(week => week.includes(date));
-  return index < 0 ? 0 : index;
-};
+import { useDateNavigation } from '../hooks/useDateNavigation';
 
 export default function OuraDashboard() {
   const { showToast } = useToast();
   const [appData, setAppData] = useState({});
   const [availableDates, setAvailableDates] = useState([]);
-  const [selectedDate, setSelectedDate] = useState('');
   const [isDashboardVisible, setIsDashboardVisible] = useState(false);
-  const dateWeeks = useMemo(() => groupDatesIntoWeeks(availableDates), [availableDates]);
-  const weekIndex = useMemo(() => findWeekIndex(dateWeeks, selectedDate), [dateWeeks, selectedDate]);
-  const weekDates = useMemo(() => dateWeeks[weekIndex] || [], [dateWeeks, weekIndex]);
-  const availableDateSet = useMemo(() => new Set(availableDates), [availableDates]);
-  const dateWindow = useMemo(
-    () => weekDates.filter(date => availableDateSet.has(date)),
-    [weekDates, availableDateSet],
-  );
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const {
+    selectedDate,
+    setSelectedDate,
+    weekDates,
+    dateWindow,
+    changeWeek,
+    canPrevious,
+    canNext,
+  } = useDateNavigation(availableDates);
 
   // Background state
   const [backgroundMode, setBackgroundMode] = useState('particles');
@@ -123,7 +87,7 @@ export default function OuraDashboard() {
     setAvailableDates(sorted);
     setSelectedDate(mostRecent);
     setIsDashboardVisible(true);
-  }, [showToast]);
+  }, [showToast, setSelectedDate]);
 
   const handleCopySnapshot = useCallback(async () => {
     const snapshot = buildDashboardSnapshot({
@@ -143,43 +107,6 @@ export default function OuraDashboard() {
   if (!isDashboardVisible) {
     return <UploadScreen onDataLoaded={handleDataLoaded} />;
   }
-
-  const changeWeek = (direction) => {
-    const nextIndex = Math.min(Math.max(weekIndex + direction, 0), dateWeeks.length - 1);
-    if (nextIndex === weekIndex) return;
-
-    const nextWeek = dateWeeks[nextIndex].filter(date => availableDateSet.has(date));
-    setSelectedDate(selectDateInWeek(selectedDate, nextWeek));
-  };
-
-  const getTrendBars = (category) => {
-    return dateWindow.map((d) => {
-      const rec = appData[category]?.[d]?.[0];
-      const hasScore = rec?.score !== null && rec?.score !== undefined && rec?.score !== '' && Number.isFinite(Number(rec.score));
-      const score = hasScore ? Number(rec.score) : null;
-      const height = hasScore ? Math.max(8, Math.round(score * 0.32)) : 4;
-      const color = hasScore ? getScoreColor(score) : 'rgba(255,255,255,0.1)';
-      const isActive = d === selectedDate;
-      return (
-        <div
-          key={d}
-          className={`flex-1 flex flex-col items-end justify-end cursor-pointer ${isActive ? 'active' : ''}`}
-          onClick={() => setSelectedDate(d)}
-        >
-          <div
-            className="w-full rounded-t-sm transition-opacity"
-            style={{ height: `${height}px`, backgroundColor: color, opacity: isActive ? 1 : 0.35 }}
-          />
-          <div className="text-[8px] text-slate-500 mt-0.5">{new Date(d).getDate()}</div>
-        </div>
-      );
-    });
-  };
-
-  const getWeeklyScores = (category) => dateWindow.map((date) => ({
-    date,
-    score: appData[category]?.[date]?.[0]?.score ?? null,
-  }));
 
   const readinessData = appData.readiness?.[selectedDate]?.[0];
   const sleepData = appData.sleep?.[selectedDate]?.[0];
@@ -209,6 +136,7 @@ export default function OuraDashboard() {
         <Header
           dateString={selectedDate}
           onCopySnapshot={handleCopySnapshot}
+          onCompare={() => setIsCompareOpen(true)}
           backgroundMode={backgroundMode}
           onToggleBackground={toggleBackground}
           onPrevImage={prevImage}
@@ -224,33 +152,19 @@ export default function OuraDashboard() {
               onSelect={setSelectedDate}
               onPrevious={() => changeWeek(-1)}
               onNext={() => changeWeek(1)}
-              canPrevious={weekIndex > 0}
-              canNext={weekIndex < dateWeeks.length - 1}
+              canPrevious={canPrevious}
+              canNext={canNext}
             />
           </section>
 
           <QuoteCard />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <ScoreCard
-              label="Readiness"
-              data={readinessData}
-              trendBars={getTrendBars('readiness')}
-              weeklyScores={getWeeklyScores('readiness')}
-            />
-            <ScoreCard
-              label="Sleep"
-              data={sleepData}
-              trendBars={getTrendBars('sleep')}
-              weeklyScores={getWeeklyScores('sleep')}
-            />
-            <ScoreCard
-              label="Activity"
-              data={activityData}
-              trendBars={getTrendBars('activity')}
-              weeklyScores={getWeeklyScores('activity')}
-            />
-          </div>
+          <ScoreSummaryGrid
+            appData={appData}
+            selectedDate={selectedDate}
+            dateWindow={dateWindow}
+            onSelectDate={setSelectedDate}
+          />
 
           <div className="space-y-6">
             <section id="readiness" className="scroll-mt-20">
@@ -286,6 +200,17 @@ export default function OuraDashboard() {
             </section>
           </div>
         </main>
+
+        <AnimatePresence>
+          {isCompareOpen && (
+            <CompareModal
+              appData={appData}
+              availableDates={availableDates}
+              initialDate={selectedDate}
+              onClose={() => setIsCompareOpen(false)}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

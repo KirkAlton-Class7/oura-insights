@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
-import { Camera, Image, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Camera, Image, ImageOff, ChevronLeft, ChevronRight, SquareSplitHorizontal } from 'lucide-react';
 
 export default function Header({ 
-  dateString, 
+  dateString,
   onCopySnapshot, 
+  onCompare,
   backgroundMode, 
   onToggleBackground,
   onPrevImage,
@@ -88,6 +89,15 @@ export default function Header({
               <span className="hidden sm:inline">
                 {backgroundMode === 'particles' ? 'Image' : 'Particles'}
               </span>
+            </button>
+
+            {/* Compare Button */}
+            <button
+              onClick={onCompare}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-slate-300 hover:border-white/40 hover:text-cyan-300 transition-all text-xs font-outfit font-medium tabular-nums"
+            >
+              <SquareSplitHorizontal className="w-4 h-4" />
+              <span>Compare</span>
             </button>
 
             {/* Copy Snapshot Button */}

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import ParticlesBackground from './ParticlesBackground';
 
 export default function BackgroundManager({ 
@@ -7,22 +6,20 @@ export default function BackgroundManager({
   currentIndex,
   // onPrev and onNext are no longer used – removed from props
 }) {
-  const [imageUrl, setImageUrl] = useState('');
-
-  useEffect(() => {
-    if (mode === 'image' && imageList.length > 0) {
-      const base = import.meta.env.BASE_URL || '/';
-      const item = imageList[currentIndex % imageList.length];
-      const filename = item.filename;
-      setImageUrl(`${base}data/images/image_gallery/${filename}`);
-    }
-  }, [mode, currentIndex, imageList]);
+  const currentItem = imageList[currentIndex % imageList.length] || {};
+  const base = import.meta.env.BASE_URL || '/';
+  const upscaledFilename = currentItem.filename?.replace(/\.webp$/i, '-sharpen-upscale-4x.webp');
+  const imageUrl = mode === 'image' && upscaledFilename
+    ? `${base}data/images/image_gallery/upscaled/${upscaledFilename}`
+    : '';
 
   if (mode === 'particles') {
     return <ParticlesBackground />;
   }
 
-  const currentItem = imageList[currentIndex % imageList.length] || {};
+  const fallbackImageUrl = currentItem.filename
+    ? `${base}data/images/image_gallery/${currentItem.filename}`
+    : '';
   const location = currentItem.location || 'Unknown location';
   const total = imageList.length;
   const indexDisplay = total ? `${currentIndex + 1} / ${total}` : '';
@@ -34,6 +31,12 @@ export default function BackgroundManager({
           src={imageUrl}
           alt={currentItem.title || 'Background'}
           className="w-full h-full object-cover"
+          onError={(event) => {
+            if (fallbackImageUrl && event.currentTarget.src !== fallbackImageUrl) {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = fallbackImageUrl;
+            }
+          }}
         />
       ) : (
         <div className="w-full h-full bg-slate-900 flex items-center justify-center">
