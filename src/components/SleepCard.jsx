@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import Card from './Card';
 import SubScoreBar from './SubScoreBar';
 import { useToast } from '../context/ToastContext';
+import { getScoreColor } from '../utils/colors';
 
 export default function SleepCard({ data, sleepmodelData, sleeptimeData }) {
   const { showToast } = useToast();
@@ -157,7 +158,7 @@ export default function SleepCard({ data, sleepmodelData, sleeptimeData }) {
     <Card
       title="Sleep"
       subtitle="Sleep score and contributors"
-      snapshotText={`Sleep: ${score || '--'}`}
+      snapshotText={`Sleep: ${score ?? '--'}`}
       snapshotLabel="Sleep snapshot"
       onCopyFailure={() => showToast('Failed to copy Sleep snapshot.')}
       onCopySuccess={() => showToast('Sleep snapshot copied to clipboard.')}
@@ -165,7 +166,7 @@ export default function SleepCard({ data, sleepmodelData, sleeptimeData }) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-slate-400">Score</span>
-          <span className="text-2xl font-outfit font-bold text-purple-400">{score || '--'}</span>
+          <span className="text-2xl font-outfit font-bold" style={{ color: getScoreColor(score) }}>{score ?? '--'}</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {keys.map((key) => (
@@ -173,7 +174,6 @@ export default function SleepCard({ data, sleepmodelData, sleeptimeData }) {
               key={key}
               label={key.replace(/_/g, ' ')}
               value={contributors?.[key]}
-              color="#8b5cf6"
             />
           ))}
         </div>

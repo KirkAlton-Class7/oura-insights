@@ -1,7 +1,8 @@
 import Card from './Card';
 import { useToast } from '../context/ToastContext';
+import { METRIC_COLORS } from '../utils/colors';
 
-export default function CardioCard({ data, dateWindow, allData }) {
+export default function CardioCard({ data, dateWindow, allData, selectedDate }) {
   const { showToast } = useToast();
   if (!data) return null;
 
@@ -25,10 +26,10 @@ export default function CardioCard({ data, dateWindow, allData }) {
     }
     const range = (maxAge - minAge) || 1;
     const height = Math.max(6, Math.round(((v - minAge) / range) * 26) + 6);
-    const isActive = d === dateWindow[dateWindow.length - 1]; // highlight current
+    const isActive = d === selectedDate;
     return (
       <div key={idx} className={`flex-1 flex flex-col items-end justify-end ${isActive ? 'active' : ''}`}>
-        <div className="w-full rounded-sm" style={{ height: `${height}px`, background: '#06b6d4', opacity: isActive ? 1 : 0.35 }} />
+        <div className="w-full rounded-sm" style={{ height: `${height}px`, backgroundColor: METRIC_COLORS.cardiovascular, opacity: isActive ? 1 : 0.35 }} />
       </div>
     );
   });
@@ -45,10 +46,10 @@ export default function CardioCard({ data, dateWindow, allData }) {
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           {vasAge !== null && (
-            <div><span className="text-xs text-slate-400">Vascular Age</span><br /><span className="text-2xl font-outfit font-bold text-cyan-400">{vasAge} years</span></div>
+            <div><span className="text-xs text-slate-400">Vascular Age</span><br /><span className="text-2xl font-outfit font-bold" style={{ color: METRIC_COLORS.cardiovascular }}>{vasAge} years</span></div>
           )}
           {pwv !== null && (
-            <div><span className="text-xs text-slate-400">Pulse Wave Velocity</span><br /><span className="text-2xl font-outfit font-bold text-cyan-400">{pwv} m/s</span></div>
+            <div><span className="text-xs text-slate-400">Pulse Wave Velocity</span><br /><span className="text-2xl font-outfit font-bold" style={{ color: METRIC_COLORS.cardiovascular }}>{pwv} m/s</span></div>
           )}
         </div>
         {trendBars.length > 0 && (

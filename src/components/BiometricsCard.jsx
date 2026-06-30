@@ -1,5 +1,6 @@
 import Card from './Card';
 import { useToast } from '../context/ToastContext';
+import { getBloodOxygenColor, METRIC_COLORS } from '../utils/colors';
 
 export default function BiometricsCard({ spo2Data, heartrateData, temperatureData }) {
   const { showToast } = useToast();
@@ -38,7 +39,7 @@ export default function BiometricsCard({ spo2Data, heartrateData, temperatureDat
         {spo2Val && (
           <div className="bg-white/5 p-4 rounded-xl">
             <div className="text-xs text-slate-400 uppercase tracking-wider">Blood Oxygen (SpO₂)</div>
-            <div className="text-3xl font-outfit font-bold" style={{ color: Number(spo2Val) >= 95 ? '#10b981' : '#f43f5e' }}>
+            <div className="text-3xl font-outfit font-bold" style={{ color: getBloodOxygenColor(spo2Val) }}>
               {spo2Val}%
             </div>
             {bdi !== undefined && <div className="text-xs text-slate-400 mt-1">Breathing disturbance: {bdi}</div>}
@@ -47,14 +48,14 @@ export default function BiometricsCard({ spo2Data, heartrateData, temperatureDat
         {avgBpm && (
           <div className="bg-white/5 p-4 rounded-xl">
             <div className="text-xs text-slate-400 uppercase tracking-wider">Heart Rate</div>
-            <div className="text-3xl font-outfit font-bold text-cyan-400">{avgBpm} bpm</div>
+            <div className="text-3xl font-outfit font-bold" style={{ color: METRIC_COLORS.heartRate }}>{avgBpm} bpm</div>
             <div className="text-xs text-slate-400 mt-1">Min {minBpm} · Max {maxBpm} · {bpms.length} readings</div>
           </div>
         )}
         {avgTemp && (
           <div className="bg-white/5 p-4 rounded-xl sm:col-span-2">
             <div className="text-xs text-slate-400 uppercase tracking-wider">Skin Temperature</div>
-            <div className="text-3xl font-outfit font-bold text-amber-400">{avgTemp}°C</div>
+            <div className="text-3xl font-outfit font-bold" style={{ color: METRIC_COLORS.skinTemperature }}>{avgTemp}°C</div>
             <div className="text-xs text-slate-400 mt-1">Range {minTemp}° – {maxTemp}° · {temps.length} readings</div>
           </div>
         )}

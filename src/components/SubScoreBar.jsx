@@ -1,13 +1,17 @@
-export default function SubScoreBar({ label, value, color }) {
+import { getScoreColor } from '../utils/colors';
+
+export default function SubScoreBar({ label, value }) {
   const v = value !== null && value !== undefined ? Number(value) : null;
-  const display = v !== null ? v : '--';
-  const width = v !== null ? Math.min(v, 100) : 0;
+  const hasValue = v !== null && Number.isFinite(v);
+  const display = hasValue ? v : '--';
+  const width = hasValue ? Math.min(Math.max(v, 0), 100) : 0;
+  const color = getScoreColor(hasValue ? v : null);
 
   return (
     <div>
       <div className="flex justify-between text-xs">
         <span className="text-slate-400 capitalize">{label}</span>
-        <span className="font-mono text-slate-300">{display}</span>
+        <span className="font-mono" style={{ color }}>{display}</span>
       </div>
       <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden mt-1">
         <div

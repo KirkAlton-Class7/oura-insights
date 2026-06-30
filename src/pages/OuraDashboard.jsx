@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import UploadScreen from '../components/UploadScreen';
@@ -15,13 +15,25 @@ import BackgroundManager from '../components/BackgroundManager';
 import { buildDashboardSnapshot } from '../utils/snapshot';
 import { writeClipboardText } from '../utils/clipboard';
 import { useToast } from '../context/ToastContext';
+import { getScoreColor } from '../utils/colors';
+
+const groupDatesIntoWeeks = (dates) => {
+  const weeks = [];
+  for (let end = dates.length; end > 0; end = Math.max(0, end - 7)) {
+    const start = Math.max(0, end - 7);
+    weeks.unshift(dates.slice(start, end));
+  }
+  return weeks;
+};
 
 export default function OuraDashboard() {
   const { showToast } = useToast();
   const [appData, setAppData] = useState({});
-  const [dateWindow, setDateWindow] = useState([]);
+  const [dateWeeks, setDateWeeks] = useState([]);
+  const [weekIndex, setWeekIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState('');
   const [isDashboardVisible, setIsDashboardVisible] = useState(false);
+  const dateWindow = useMemo(() => dateWeeks[weekIndex] || [], [dateWeeks, weekIndex]);
 
   // Background state
   const [backgroundMode, setBackgroundMode] = useState('particles');
@@ -72,10 +84,9 @@ export default function OuraDashboard() {
       return;
     }
     const mostRecent = sorted[sorted.length - 1];
-    const idx = sorted.indexOf(mostRecent);
-    const startIdx = Math.max(0, idx - 6);
-    const window = sorted.slice(startIdx, idx + 1);
-    setDateWindow(window);
+    const weeks = groupDatesIntoWeeks(sorted);
+    setDateWeeks(weeks);
+    setWeekIndex(weeks.length - 1);
     setSelectedDate(mostRecent);
     setIsDashboardVisible(true);
   }, [showToast]);
@@ -99,12 +110,23 @@ export default function OuraDashboard() {
     return <UploadScreen onDataLoaded={handleDataLoaded} />;
   }
 
+  const changeWeek = (direction) => {
+    const nextIndex = Math.min(Math.max(weekIndex + direction, 0), dateWeeks.length - 1);
+    if (nextIndex === weekIndex) return;
+
+    const selectedOffset = Math.max(0, dateWindow.indexOf(selectedDate));
+    const nextWeek = dateWeeks[nextIndex];
+    setWeekIndex(nextIndex);
+    setSelectedDate(nextWeek[Math.min(selectedOffset, nextWeek.length - 1)]);
+  };
+
   const getTrendBars = (category) => {
     return dateWindow.map((d) => {
       const rec = appData[category]?.[d]?.[0];
-      const score = rec?.score ? Number(rec.score) : 0;
-      const height = score ? Math.max(8, Math.round(score * 0.32)) : 4;
-      const color = score ? getScoreColor(score) : 'rgba(255,255,255,0.1)';
+      const hasScore = rec?.score !== null && rec?.score !== undefined && rec?.score !== '' && Number.isFinite(Number(rec.score));
+      const score = hasScore ? Number(rec.score) : null;
+      const height = hasScore ? Math.max(8, Math.round(score * 0.32)) : 4;
+      const color = hasScore ? getScoreColor(score) : 'rgba(255,255,255,0.1)';
       const isActive = d === selectedDate;
       return (
         <div
@@ -122,12 +144,10 @@ export default function OuraDashboard() {
     });
   };
 
-  const getScoreColor = (s) => {
-    if (s >= 85) return '#10b981';
-    if (s >= 70) return '#06b6d4';
-    if (s >= 60) return '#f59e0b';
-    return '#f43f5e';
-  };
+  const getWeeklyScores = (category) => dateWindow.map((date) => ({
+    date,
+    score: appData[category]?.[date]?.[0]?.score ?? null,
+  }));
 
   const readinessData = appData.readiness?.[selectedDate]?.[0];
   const sleepData = appData.sleep?.[selectedDate]?.[0];
@@ -165,7 +185,15 @@ export default function OuraDashboard() {
 
         <main className="relative z-10 max-w-6xl mx-auto px-4 py-6 space-y-8 pb-16">
           <section id="scores" className="scroll-mt-20">
-            <DateNav dates={dateWindow} selectedDate={selectedDate} onSelect={setSelectedDate} />
+            <DateNav
+              dates={dateWindow}
+              selectedDate={selectedDate}
+              onSelect={setSelectedDate}
+              onPrevious={() => changeWeek(-1)}
+              onNext={() => changeWeek(1)}
+              canPrevious={weekIndex > 0}
+              canNext={weekIndex < dateWeeks.length - 1}
+            />
           </section>
 
           <QuoteCard />
@@ -174,20 +202,20 @@ export default function OuraDashboard() {
             <ScoreCard
               label="Readiness"
               data={readinessData}
-              color="#06b6d4"
               trendBars={getTrendBars('readiness')}
+              weeklyScores={getWeeklyScores('readiness')}
             />
             <ScoreCard
               label="Sleep"
               data={sleepData}
-              color="#8b5cf6"
               trendBars={getTrendBars('sleep')}
+              weeklyScores={getWeeklyScores('sleep')}
             />
             <ScoreCard
               label="Activity"
               data={activityData}
-              color="#f59e0b"
               trendBars={getTrendBars('activity')}
+              weeklyScores={getWeeklyScores('activity')}
             />
           </div>
 
@@ -209,7 +237,12 @@ export default function OuraDashboard() {
               />
             </section>
             <section id="cardio" className="scroll-mt-20">
-              <CardioCard data={cardioData} dateWindow={dateWindow} allData={appData.cardiovascularage} />
+              <CardioCard
+                data={cardioData}
+                dateWindow={dateWindow}
+                allData={appData.cardiovascularage}
+                selectedDate={selectedDate}
+              />
             </section>
             <section id="biometrics" className="scroll-mt-20">
               <BiometricsCard

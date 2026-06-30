@@ -1,15 +1,28 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Quote, RefreshCw, Bookmark, Copy, BookmarkCheck, Star, X } from 'lucide-react';
+import { Quote, RefreshCw, Bookmark, Copy, Check, BookmarkCheck, Star, X } from 'lucide-react';
 import Card from './Card';
 import { writeClipboardText } from '../utils/clipboard';
+import { formatQuoteText, getQuoteAttribution, getQuoteKey, normalizeQuotes } from '../utils/quotes';
+
+const FAVORITES_KEY = 'oura_quotes_favorites';
+
+const loadStoredFavorites = () => {
+  try {
+    const stored = localStorage.getItem(FAVORITES_KEY);
+    return normalizeQuotes(stored ? JSON.parse(stored) : []);
+  } catch (error) {
+    console.warn('Failed to load saved quotes:', error);
+    return [];
+  }
+};
 
 export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
   const [currentQuote, setCurrentQuote] = useState(null);
-  const [saved, setSaved] = useState(false);
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState(loadStoredFavorites);
   const [showFavorites, setShowFavorites] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [quotesList, setQuotesList] = useState([]);
 
   // Load quotes from the public JSON file
@@ -17,9 +30,10 @@ export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
     const loadQuotes = async () => {
       try {
         const base = import.meta.env.BASE_URL || '/';
-        const response = await fetch(`${base}data/quotes/quotes.json`);
+        const response = await fetch(`${base}data/quotes/quotes.json`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch quotes');
-        const data = await response.json();
+        const data = normalizeQuotes(await response.json());
+        if (data.length === 0) throw new Error('Quotes file contains no valid records');
         setQuotesList(data);
         if (data.length > 0) {
           const random = data[Math.floor(Math.random() * data.length)];
@@ -31,22 +45,25 @@ export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
         setQuotesList([]);
         setCurrentQuote({
           text: 'Could not load quotes. Please check the file.',
-          speaker: 'System',
+          author: 'System',
         });
       }
     };
     loadQuotes();
   }, []);
 
-  // Load favorites from localStorage when currentQuote changes
-  useEffect(() => {
-    if (currentQuote) {
-      const stored = localStorage.getItem('oura_quotes_favorites');
-      const favs = stored ? JSON.parse(stored) : [];
-      setFavorites(favs);
-      setSaved(favs.some(q => q.text === currentQuote.text && q.speaker === currentQuote.speaker));
+  const saved = currentQuote
+    ? favorites.some(quote => getQuoteKey(quote) === getQuoteKey(currentQuote))
+    : false;
+
+  const persistFavorites = (nextFavorites) => {
+    setFavorites(nextFavorites);
+    try {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(nextFavorites));
+    } catch (error) {
+      console.warn('Failed to save favorite quotes:', error);
     }
-  }, [currentQuote]);
+  };
 
   const refreshQuote = () => {
     if (quotesList.length === 0) return;
@@ -56,17 +73,19 @@ export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
     do {
       newQuote = quotesList[Math.floor(Math.random() * quotesList.length)];
       attempts++;
-    } while (quotesList.length > 1 && newQuote.text === currentQuote?.text && attempts < 20);
+    } while (quotesList.length > 1 && getQuoteKey(newQuote) === getQuoteKey(currentQuote) && attempts < 20);
     setCurrentQuote(newQuote);
     setTimeout(() => setIsRefreshing(false), 400);
   };
 
   const copyQuote = async () => {
     if (!currentQuote) return;
-    const text = `“${currentQuote.text}” — ${currentQuote.speaker || 'Unknown'}`;
+    const text = formatQuoteText(currentQuote);
     try {
       await writeClipboardText(text);
+      setCopied(true);
       onCopySuccess?.('Quote copied to clipboard.');
+      setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error('Failed to copy quote:', error);
       onCopyFailure?.(text, 'quote');
@@ -76,31 +95,33 @@ export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
   const toggleSave = () => {
     if (!currentQuote) return;
     const newFavs = saved
-      ? favorites.filter(q => q.text !== currentQuote.text || q.speaker !== currentQuote.speaker)
-      : [...favorites, { text: currentQuote.text, speaker: currentQuote.speaker }];
-    setFavorites(newFavs);
-    localStorage.setItem('oura_quotes_favorites', JSON.stringify(newFavs));
-    setSaved(!saved);
+      ? favorites.filter(quote => getQuoteKey(quote) !== getQuoteKey(currentQuote))
+      : [...favorites, currentQuote];
+    persistFavorites(newFavs);
   };
 
   const removeFavorite = (quote, e) => {
     e.stopPropagation();
-    const newFavs = favorites.filter(q => q.text !== quote.text || q.speaker !== quote.speaker);
-    setFavorites(newFavs);
-    localStorage.setItem('oura_quotes_favorites', JSON.stringify(newFavs));
-    if (currentQuote && quote.text === currentQuote.text && quote.speaker === currentQuote.speaker) {
-      setSaved(false);
-    }
+    const newFavs = favorites.filter(favorite => getQuoteKey(favorite) !== getQuoteKey(quote));
+    persistFavorites(newFavs);
+  };
+
+  const selectFavorite = (quote) => {
+    setCurrentQuote(quote);
+    setShowFavorites(false);
   };
 
   if (!currentQuote) return null;
+
+  const { primary, secondary } = getQuoteAttribution(currentQuote);
+  const formattedQuote = formatQuoteText(currentQuote);
 
   return (
     <>
       <Card
         title="Featured Quote"
         subtitle="Inspiration from the community"
-        snapshotText={`“${currentQuote.text}” — ${currentQuote.speaker || 'Unknown'}`}
+        snapshotText={formattedQuote}
         snapshotLabel="Quote snapshot"
         onCopyFailure={onCopyFailure}
         onCopySuccess={onCopySuccess}
@@ -133,8 +154,15 @@ export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
             <footer className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
               <div>
                 <p className="text-sm font-medium bg-gradient-to-r from-slate-200 to-slate-300 bg-clip-text text-transparent">
-                  — {currentQuote.speaker || 'Unknown'}
+                  — {primary}
                 </p>
+                {secondary.length > 0 && (
+                  <div className="mt-1 space-y-0.5">
+                    {secondary.map(line => (
+                      <p key={line} className="text-xs text-slate-500">{line}</p>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="flex gap-2">
@@ -145,7 +173,11 @@ export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
                   className="p-2 rounded-lg hover:bg-white/10 transition-colors relative group"
                   title="Copy quote"
                 >
-                  <Copy className="w-4 h-4 text-slate-400 group-hover:text-slate-200" />
+                  {copied ? (
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-slate-400 group-hover:text-slate-200" />
+                  )}
                 </motion.button>
                 
                 <motion.button
@@ -202,19 +234,30 @@ export default function QuoteCard({ onCopyFailure, onCopySuccess }) {
               {favorites.length === 0 ? (
                 <p className="text-center text-slate-400 py-8">No favorites yet. Click the bookmark button to save quotes!</p>
               ) : (
-                favorites.map((fav, idx) => (
-                  <div key={idx} className="group p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer border border-white/10">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="flex-1">
-                        <p className="text-sm text-slate-200">“{fav.text.substring(0, 100)}...”</p>
-                        <p className="text-xs text-slate-400 mt-1">— {fav.speaker || 'Unknown'}</p>
+                favorites.map((fav) => {
+                  const attribution = getQuoteAttribution(fav);
+                  const preview = fav.text.length > 100 ? `${fav.text.substring(0, 100)}…` : fav.text;
+                  return (
+                    <div
+                      key={getQuoteKey(fav)}
+                      onClick={() => selectFavorite(fav)}
+                      className="group p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer border border-white/10"
+                    >
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1">
+                          <p className="text-sm text-slate-200">“{preview}”</p>
+                          <p className="text-xs text-slate-400 mt-1">— {attribution.primary}</p>
+                          {attribution.secondary.map(line => (
+                            <p key={line} className="text-xs text-slate-500">{line}</p>
+                          ))}
+                        </div>
+                        <button onClick={(e) => removeFavorite(fav, e)} className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/20 transition-all" title="Remove">
+                          <X className="w-4 h-4 text-red-400" />
+                        </button>
                       </div>
-                      <button onClick={(e) => removeFavorite(fav, e)} className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/20 transition-all" title="Remove">
-                        <X className="w-4 h-4 text-red-400" />
-                      </button>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

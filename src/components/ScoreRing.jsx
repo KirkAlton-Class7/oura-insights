@@ -1,20 +1,15 @@
-export default function ScoreRing({ score, color, size = 140 }) {
+import { getScoreColor, getScoreStatus } from '../utils/colors';
+
+export default function ScoreRing({ score, size = 140 }) {
   const cx = size / 2;
   const cy = size / 2;
   const r = size / 2 - 13;
   const circ = 2 * Math.PI * r;
-  const fill = score ? Math.min(100, Math.max(0, Number(score))) / 100 : 0;
+  const hasScore = score !== null && score !== undefined && score !== '' && Number.isFinite(Number(score));
+  const fill = hasScore ? Math.min(100, Math.max(0, Number(score))) / 100 : 0;
   const offset = circ * (1 - fill);
-  const display = score || '--';
-
-  const getStatus = (s) => {
-    if (!s || s === '--') return 'No Data';
-    const num = Number(s);
-    if (num >= 85) return 'Optimal';
-    if (num >= 70) return 'Good';
-    if (num >= 60) return 'Fair';
-    return 'Pay Attention';
-  };
+  const display = hasScore ? score : '--';
+  const color = getScoreColor(hasScore ? score : null);
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -33,7 +28,7 @@ export default function ScoreRing({ score, color, size = 140 }) {
       </text>
       <text x={cx} y={cy + 16} textAnchor="middle" fill="rgba(255,255,255,0.45)"
         fontSize="11" fontFamily="Inter" dominantBaseline="auto">
-        {getStatus(score)}
+        {getScoreStatus(hasScore ? score : null)}
       </text>
     </svg>
   );

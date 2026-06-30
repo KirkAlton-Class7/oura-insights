@@ -1,6 +1,7 @@
 import Card from './Card';
 import SubScoreBar from './SubScoreBar';
 import { useToast } from '../context/ToastContext';
+import { getStatusColor, SEMANTIC_COLORS } from '../utils/colors';
 
 export default function StressResilienceCard({ stressData, resilienceData, daytimeStressData }) {
   const { showToast } = useToast();
@@ -32,12 +33,10 @@ export default function StressResilienceCard({ stressData, resilienceData, dayti
   const recovHigh = stressData?.recovery_high ? Number(stressData.recovery_high) : 0;
   const totalTime = stressHigh + recovHigh || 1;
   const daySummary = stressData?.day_summary || null;
-  const summaryColors = { normal: '#10b981', stressful: '#f43f5e', restorative: '#06b6d4', balanced: '#f59e0b' };
-  const summaryColor = daySummary ? (summaryColors[daySummary] || '#94a3b8') : '#94a3b8';
+  const summaryColor = getStatusColor(daySummary);
 
-  const levelColors = { exceptional: '#10b981', strong: '#06b6d4', solid: '#f59e0b', adequate: '#f59e0b', limited: '#f43f5e' };
   const levelLabel = resilienceData?.level ? resilienceData.level.charAt(0).toUpperCase() + resilienceData.level.slice(1) : null;
-  const levelColor = resilienceData?.level ? (levelColors[resilienceData.level] || '#94a3b8') : '#94a3b8';
+  const levelColor = getStatusColor(resilienceData?.level);
   const resContrib = resilienceData?.contributors || {};
 
   return (
@@ -55,14 +54,14 @@ export default function StressResilienceCard({ stressData, resilienceData, dayti
             <div className="flex items-center gap-3">
               <span className="text-xs text-slate-400 w-16">Stress</span>
               <div className="flex-1 h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-red-400" style={{ width: `${(stressHigh / totalTime) * 100}%` }} />
+                <div className="h-full rounded-full" style={{ width: `${(stressHigh / totalTime) * 100}%`, backgroundColor: SEMANTIC_COLORS.bad }} />
               </div>
               <span className="text-xs font-mono text-slate-400 w-16 text-right">{fmtDuration(stressHigh)}</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-slate-400 w-16">Recovery</span>
               <div className="flex-1 h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-emerald-400" style={{ width: `${(recovHigh / totalTime) * 100}%` }} />
+                <div className="h-full rounded-full" style={{ width: `${(recovHigh / totalTime) * 100}%`, backgroundColor: SEMANTIC_COLORS.optimal }} />
               </div>
               <span className="text-xs font-mono text-slate-400 w-16 text-right">{fmtDuration(recovHigh)}</span>
             </div>
@@ -95,13 +94,13 @@ export default function StressResilienceCard({ stressData, resilienceData, dayti
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
               {resContrib.daytime_recovery !== undefined && (
-                <SubScoreBar label="Daytime Recovery" value={Math.round(resContrib.daytime_recovery)} color="#06b6d4" />
+                <SubScoreBar label="Daytime Recovery" value={Math.round(resContrib.daytime_recovery)} />
               )}
               {resContrib.sleep_recovery !== undefined && (
-                <SubScoreBar label="Sleep Recovery" value={Math.round(resContrib.sleep_recovery)} color="#8b5cf6" />
+                <SubScoreBar label="Sleep Recovery" value={Math.round(resContrib.sleep_recovery)} />
               )}
               {resContrib.stress !== undefined && (
-                <SubScoreBar label="Stress Capacity" value={Math.round(resContrib.stress)} color="#f43f5e" />
+                <SubScoreBar label="Stress Capacity" value={Math.round(resContrib.stress)} />
               )}
             </div>
           </div>

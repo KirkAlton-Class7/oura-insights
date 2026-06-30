@@ -1,6 +1,7 @@
 import Card from './Card';
 import SubScoreBar from './SubScoreBar';
 import { useToast } from '../context/ToastContext';
+import { getScoreColor } from '../utils/colors';
 
 export default function ActivityCard({ data }) {
   const { showToast } = useToast();
@@ -52,7 +53,7 @@ export default function ActivityCard({ data }) {
     <Card
       title="Activity"
       subtitle="Activity score and breakdown"
-      snapshotText={`Activity: ${score || '--'}`}
+      snapshotText={`Activity: ${score ?? '--'}`}
       snapshotLabel="Activity snapshot"
       onCopyFailure={() => showToast('Failed to copy Activity snapshot.')}
       onCopySuccess={() => showToast('Activity snapshot copied to clipboard.')}
@@ -60,7 +61,7 @@ export default function ActivityCard({ data }) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-sm text-slate-400">Score</span>
-          <span className="text-2xl font-outfit font-bold text-amber-400">{score || '--'}</span>
+          <span className="text-2xl font-outfit font-bold" style={{ color: getScoreColor(score) }}>{score ?? '--'}</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {keys.map((key) => (
@@ -68,7 +69,6 @@ export default function ActivityCard({ data }) {
               key={key}
               label={key.replace(/_/g, ' ')}
               value={contributors?.[key]}
-              color="#f59e0b"
             />
           ))}
         </div>
